@@ -813,8 +813,8 @@ function set_iframe(){
         '.com-application-NotificationToast__close-button { display: none; } '+
         '.com-my-list-EpisodeMyListCircleButtonWithSelectList__select-list, '+
         '.com-my-list-SlotMyListCircleButtonWithSelectList__select-list { display: none; } '+
-        '.cc_ml { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
-        'background: repeating-linear-gradient(#ffcc00 10px, #fff 120px); } '+
+        '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
+        'border-radius: 20px; background: #ffcc00; } '+
         '</style>';
 
     document.body.insertAdjacentHTML('beforeend', in_style);
@@ -848,30 +848,27 @@ function like(){
     function wait_target5(){
         retry5++;
         if(retry5>100){ // リトライ制限 2secまで
-            let ml=
-                document.querySelector('.com-my-list-MyListBaseCircleButton__button-outline');
             let s_button=document.querySelector('.com-content-list-ContentListSortButton');
-            if(ml && s_button){
+            if(s_button){
                 clearInterval(interval5);
-                like_button(ml, s_button); }}}
+                like_button(s_button); }}}
 
 
-    function like_button(ml, s_button){
-        let c_ml=ml.cloneNode();
-        c_ml.classList.add('cc_ml');
-        s_button.parentElement.appendChild(c_ml);
+    function like_button(s_button){
+        let l_c='<button class="like_clone"></button>';
+        s_button.insertAdjacentHTML('afterend', l_c);
 
-        let cc_ml=document.querySelector('.cc_ml');
+        let like_clone=document.querySelector('.like_clone');
         let c_button=document.querySelector('.com-my-list-MyListBaseCircleButton__button');
-        if(cc_ml && c_button){
-            clone_disp(cc_ml);
-            cc_ml.onclick=function(){
+        if(like_clone && c_button){
+            clone_disp(like_clone);
+            like_clone.onclick=function(){
                 c_button.click();
                 setTimeout(()=>{
                     if_video();
                 }, 20);
                 setTimeout(()=>{
-                    clone_disp(cc_ml);
+                    clone_disp(like_clone);
                 }, 200); }}
 
 
@@ -882,13 +879,13 @@ function like(){
                 select_b.click(); }}
 
 
-        function clone_disp(cc_ml){
+        function clone_disp(lc){
             let mlb=
                 document.querySelector('.com-my-list-MyListBaseCircleButton__button-outline');
             if(mlb.classList.contains('com-my-list-MyListBaseCircleButton__button-outline--active')){
-                cc_ml.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
+                lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
             else{
-                cc_ml.style.background='#999'; }}}
+                lc.style.background='#999'; }}}
 
 } // like()
 
@@ -1004,7 +1001,6 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
                 }, 200); }}}
 
 } //light_box()
-
 
 
 
