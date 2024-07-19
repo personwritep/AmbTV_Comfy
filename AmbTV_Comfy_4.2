@@ -85,7 +85,8 @@ function player_env(){
             '{ margin: 6px !important; } '+
             '.com-vod-VODMiniPlayerWrapper:before { display: none !important; } '+
             '.com-vod-VODMiniPlayerWrapper__player--bg { display: none !important; } '+
-            '.com-vod-VODMiniPlayerWrapper__player { position: relative !important; } '+
+            '.com-vod-VODMiniPlayerWrapper__player { position: relative !important; '+
+            'height: calc(100vh - 12px); } '+
             '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
             '.c-vod-EpisodePlayerContainer-wrapper { '+
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
@@ -1006,4 +1007,3 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
                 }, 200); }}}
 
 } //light_box()
-
