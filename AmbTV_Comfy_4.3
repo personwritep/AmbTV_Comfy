@@ -93,8 +93,10 @@ function player_env(){
             '.com-vod-VODMiniPlayerWrapper__player--mini { height: 0 !important; } '+
             '.com-vod-FullscreenInBrowserButton__screen-controller { '+
             'display: none !important; } '+
-            '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+ // slots playrer
-            '.c-tv-TimeshiftPlayerContainerView-outer { height: 100vh; } '+ // slots playrer
+            // slots playrer
+            '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
+            '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; '+
+            'height: calc(100vh - 12px) !important; } '+
             '</style>'+
 
             '<style class="atv_style_ex">'+
