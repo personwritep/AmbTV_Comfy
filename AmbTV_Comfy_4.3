@@ -589,7 +589,7 @@ function disp_list(){ //「配信リスト表示」
 
             setTimeout(()=>{
                 scroll_center(target);
-            }, 200); }
+            }, 800); }
 
 
         function clear_outline(){
@@ -692,6 +692,9 @@ function creat_iframe(url){
         '.if_close { padding: 2px 10px 0; margin: 0 -10px 0 -20px; } '+
         '#notify { padding: 0; width: 100%; height: calc(100% - 40px); } '+
 
+        '.c-application-DesktopAppContainer__content { min-width: 600px; } '+
+        '.com-a-ResponsiveMainContent__inner--unlimited-max-width { min-width: 552px; } '+
+
         '.com-timetable-DesktopTimeTableWrapper__channel-content-header-wrapper { '+
         'left: 480px; } '+
         '.com-timetable-TimeTableListTimeAxis { left: 480px; } '+
@@ -745,7 +748,7 @@ function if_close(){
                 let style=cards[k].getAttribute('style');
                 if(style && style.includes('2px')){
                     scroll_center(cards[k]); }}
-        }, 400); }}
+        }, 800); }}
 
 
 
