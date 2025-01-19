@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name         AmbTV Comfy
-// @namespace    http://tampermonkey.net/
-// @version      5.2
-// @description  AbemaTV ユーティリティ
-// @author       Ameba User
+// @name        AmbTV Comfy
+// @namespace        http://tampermonkey.net/
+// @version        5.2
+// @description        AbemaTV ユーティリティ
+// @author        AbemaTV User
 // @match        https://abema.tv/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
 // @grant        none
-// @updateURL
-// @downloadURL
+// @updateURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Comfy.user.js
+// @downloadURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Comfy.user.js
 // ==/UserScript==
 
 
