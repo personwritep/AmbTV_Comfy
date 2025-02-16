@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.2
+// @version        5.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -160,21 +160,12 @@ function player_env(){
                 let monitor1=new MutationObserver(player_tool); // 機能アイコンを設置
                 monitor1.observe(wrap, { childList: true }); }
 
-            let muted_button=player.querySelector(
-                '.com-playback-Volume__icon-button[aria-label="音声をオンにする"]');
-            if(muted_button){
-                muted_button.click(); }
-        }, 200);
 
-
-        setTimeout(()=>{
             let ec_thumbnail=document.querySelector('.c-vod-EpisodePlayerContainer-thumbnail');
             if(ec_thumbnail){
                 reset_subw(); } // プレミアムAD表示時に「サブウインドウ表示」をリセット
-        }, 200);
 
 
-        setTimeout(()=>{
             player.oncontextmenu=function(){
                 hide_con(player); } // 🟩 動画面の右クリックでコントロールを非表示
         }, 200);
@@ -349,6 +340,12 @@ function player_env(){
                         }, 100); }}
 
             }} //  if(nav_b)
+
+
+        let muted_button=document.querySelector(
+            '.com-playback-Volume__icon-button[aria-label="音声をオンにする"]');
+        if(muted_button){
+            muted_button.click(); }
 
 
         reset_mode();
