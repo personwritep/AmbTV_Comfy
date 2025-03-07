@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.3
+// @version        5.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -100,6 +100,8 @@ function player_env(){
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; '+
             'height: calc(100vh - 12px) !important; } '+
+            // help
+            '.atv_help { display: inline; } '+
             '</style>'+
 
             '<style class="atv_style_ex">'+
@@ -129,14 +131,13 @@ function player_env(){
         if(!player.querySelector('.atv_style')){
             player.insertAdjacentHTML('beforeend', style); }
 
+
         let atv_style=player.querySelector('.atv_style');
         if(atv_style){
             if(sessionStorage.getItem('AmbTV_S')!='1'){
-                sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
-                atv_style.disabled=true; }
+                reset_subw(); } // 🔵 通常表示
             else{
-                sessionStorage.setItem('AmbTV_S', '1'); // 🔵 サブウインドウ表示
-                atv_style.disabled=false; }}
+                set_subw(); }} // 🔵 サブウインドウ表示
 
         let atv_style_ex=player.querySelector('.atv_style_ex'); // 🟥 拡大表示
         if(atv_style_ex){
@@ -161,8 +162,9 @@ function player_env(){
                 monitor1.observe(wrap, { childList: true }); }
 
 
-            let ec_thumbnail=document.querySelector('.c-vod-EpisodePlayerContainer-thumbnail');
-            if(ec_thumbnail){
+            let appeal_plan=
+                document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
+            if(appeal_plan){
                 reset_subw(); } // プレミアムAD表示時に「サブウインドウ表示」をリセット
 
 
@@ -198,11 +200,17 @@ function player_env(){
 
 
     function reset_subw(){
+        sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
         let atv_style=document.querySelector('.atv_style');
         if(atv_style){
-            if(sessionStorage.getItem('AmbTV_S')!='0'){
-                sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
-                atv_style.disabled=true; }}}
+            atv_style.disabled=true; }}
+
+
+    function set_subw(){
+        sessionStorage.setItem('AmbTV_S', '1'); // 🔵 サブウインドウ表示
+        let atv_style=document.querySelector('.atv_style');
+        if(atv_style){
+            atv_style.disabled=false; }}
 
 
 
@@ -233,58 +241,21 @@ function player_env(){
             if(!document.querySelector('.atv_help')){
                 nav_b.insertAdjacentHTML('beforebegin', help); }
 
+
             let sw_svg=
-                '<svg viewBox="0 0 200 200">'+
-                '<path style="fill: #fff;" d="M29 23.7L27.1 24.7L26.2 25.4L25.4'+
-                ' 26.2L24.7 27.1L23.7 29L23.4 30L23.2 31L23 33C23 34 23 35 23 36L23 41L'+
-                '23 55L23 60L23 63C23 64 23 65 23.1 66L23.4 68L24.2 70L24.7 70.9L25.4 7'+
-                '1.8L27.1 73.3L29 74.3L30 74.6L32 74.9L34 74.9L35 74.8L37 74.3L38.9 73.'+
-                '3L39.8 72.6L41.3 70.9L42.3 69L42.8 67L43 65L43 61L43 56L43 53L43 52L43'+
-                '.1 50L43.2 49L43.4 48L43.7 47.1L44.7 45.4L45.4 44.7L47.1 43.7L49 43.2L'+
-                '51 43L54 43L66 43L69 43L71 42.8L73 42.3L74.9 41.3L75.8 40.6L77.3 38.9L'+
-                '78.3 37L78.6 36L78.9 34L78.9 32L78.8 31L78.6 30L77.8 28L76.6 26.2L75.8'+
-                ' 25.4L74.9 24.7L73 23.7C71.4 23.1 69.7 23.1 68 23L65 23L61 23L40 23L36'+
-                ' 23L34 23C32.3 23.1 30.6 23.1 29 23.7M132 23.7L130.1 24.7L129.2 25.4L1'+
-                '28.4 26.2L127.2 28L126.4 30L126.2 31L126.1 32L126.1 33L126.2 35L126.4 '+
-                '36L127.2 38L127.7 38.9L128.4 39.8L130.1 41.3L132 42.3L134 42.8L136 43L'+
-                '139 43L151 43L153 43L155 43.1L156 43.2L157 43.4L157.9 43.7L159.6 44.7L'+
-                '160.3 45.4L161.3 47.1L161.8 49L161.9 50C162 51 162 52 162 53L162 56L16'+
-                '2 62C162 63.3 162 64.7 162.1 66L162.4 68L163.2 70L164.4 71.8L165.2 72.'+
-                '6L167 73.8L168 74.3L169 74.6L171 74.9L173 74.9L174 74.8L176 74.3L177.9'+
-                ' 73.3L178.8 72.6L179.6 71.8L180.8 70L181.6 68L181.9 66C182 65 182 64 1'+
-                '82 63L182 60L182 54L182 38L182 33L181.8 31L181.3 29L180.8 28L179.6 26.'+
-                '2L177.9 24.7L177 24.2L175 23.4L174 23.2L172 23L168 23L144 23L140 23L13'+
-                '7 23C135.3 23.1 133.6 23.1 132 23.7M29 99.7L27.1 100.7L26.2 101.4L25.4'+
-                ' 102.2L24.2 104L23.4 106L23.1 108C23 109 23 110 23 111L23 114L23 119L2'+
-                '3 135L23 138L23 140C23 141 23.1 142 23.2 143C23.5 144.4 23.9 145.7 24.'+
-                '7 146.9L26.2 148.6L27.1 149.3L29 150.3L31 150.8L33 151L36 151L45 151L6'+
-                '2 151L66 151L68 151C69 151 70 150.9 71 150.8C72 150.6 73 150.3 74 149.'+
-                '8C75.6 148.9 76.9 147.6 77.8 146L78.6 144L78.8 143L78.9 142L78.9 141L7'+
-                '8.8 139L78.6 138L77.8 136L77.3 135.1L76.6 134.2L75.8 133.4L74 132.2C71'+
-                '.5 130.9 68.7 131 66 131L54 131L52 131L50 130.9L49 130.8L48 130.6L47.1'+
-                ' 130.3L45.4 129.3L44.7 128.6L43.7 126.9L43.2 125L43.1 124C43 123 43 12'+
-                '2 43 121L43 118L43 112C43 110.7 43 109.3 42.9 108L42.6 106L41.8 104L40'+
-                '.6 102.2L39.8 101.4L38 100.2L37 99.7L36 99.4L34 99.1L32 99.1L31 99.2L2'+
-                '9 99.7M168 99.7L166.1 100.7L165.2 101.4L163.7 103.1L162.7 105L162.2 10'+
-                '7L162 109L162 113L162 118L162 121L162 122L161.9 124L161.8 125L161.6 12'+
-                '6L161.3 126.9L160.3 128.6L159.6 129.3L157.9 130.3L156 130.8L154 131L15'+
-                '1 131L139 131L136 131L134 131.2L132 131.7L130.1 132.7L129.2 133.4L127.'+
-                '7 135.1L126.7 137L126.4 138L126.1 140L126.1 142L126.2 143L126.4 144L12'+
-                '7.2 146L128.4 147.8L129.2 148.6L130.1 149.3L132 150.3C133.6 150.9 135.'+
-                '3 150.9 137 151L139 151L143 151L164 151L168 151L171 151C172.7 150.9 17'+
-                '4.4 150.9 176 150.3L177.9 149.3L178.8 148.6L179.6 147.8L180.3 146.9L18'+
-                '1.3 145L181.6 144L181.8 143L182 141C182 140 182 139 182 138L182 133L18'+
-                '2 119L182 114L182 111C182 110 182 109 181.9 108L181.6 106L180.8 104L18'+
-                '0.3 103.1L179.6 102.2L177.9 100.7L176 99.7L175 99.4L173 99.1L171 99.1L'+
-                '170 99.2L168 99.7M29 162.7L27.1 163.7L26.2 164.4L25.4 165.2L24.2 167L2'+
-                '3.4 169L23.2 170L23.1 171L23.1 173L23.4 175L23.7 176L24.7 177.9L26.2 1'+
-                '79.6L27.1 180.3L28 180.8L30 181.6L32 181.9C33 182 34 182 35 182L38 182'+
-                'L42 182L65 182L140 182L166 182L169 182L171 182C172 182 173 181.9 174 1'+
-                '81.8C175.4 181.5 176.7 181.1 177.9 180.3L179.6 178.8L180.3 177.9L181.3'+
-                ' 176L181.8 174L181.9 173L181.9 171L181.6 169L181.3 168L180.3 166.1L178'+
-                '.8 164.4L177.9 163.7L177 163.2L176 162.7L174 162.2L172 162L169 162L162'+
-                ' 162L140 162L72 162L43 162L38 162L35 162C33 162 30.9 162 29 162.7z">'+
-                '</path></svg>';
+                '<svg viewBox="0 0 256 256">'+
+                '<path style="fill: #fff;" d="M0 79L31 79L31 48C31 43 30 38 3'+
+                '3 34C37 30 45 31 50 31L91 31L91 0L29 0C21 0 11 -1 4 5C-1 11 0 20 0 2'+
+                '8L0 79M165 0L165 31L206 31C211 31 219 30 223 34C226 38 225 43 225 48'+
+                'L225 79L256 79L256 28C256 20 257 11 252 5C245 -1 235 0 227 0L165 0M0'+
+                ' 123L0 174C0 182 -1 191 4 197C11 203 21 202 29 202L91 202L91 171L50 '+
+                '171C45 171 37 172 33 168C30 164 31 159 31 154L31 123L0 123M225 123L2'+
+                '25 154C225 159 226 164 223 168C219 172 211 171 206 171L165 171L165 2'+
+                '02L227 202C235 202 245 203 252 197C257 191 256 182 256 174L256 123L2'+
+                '25 123M6 225C-3 228 -3 253 7 256C13 257 20 256 26 256L65 256L191 256'+
+                'L234 256C239 256 247 257 252 254C260 249 258 226 248 224C242 223 235'+
+                ' 224 229 224L192 224L76 224L28 224C21 224 12 222 6 225z"></path>'+
+                '</svg>';
 
             let sw=
                 '<button type="button" class="atv_sw com-vod-FullscreenButton">'+
@@ -292,38 +263,30 @@ function player_env(){
                 '<div class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
                 '</div></div>'+
                 '<span class="atv_icon">'+ sw_svg +'</span></button>'+
-                '<style>.atv_icon { width: 24px; height: 24px; } '+
+                '<style>.atv_icon { width: 19px; height: 19px; } '+
                 ':fullscreen .atv_sw { display: none; }</style>';
 
             if(!document.querySelector('.atv_sw')){
                 nav_b.insertAdjacentHTML('afterend', sw); }
 
             let atv_sw=document.querySelector('.atv_sw');
-            let atv_style=document.querySelector('.atv_style');
             let atv_tp=document.querySelector('.atv_tp');
-            let atv_help=document.querySelector('.atv_help');
-            if(atv_sw && atv_style && atv_tp && atv_help){
-                if(sessionStorage.getItem('AmbTV_S')=='1'){ // 🔵 サブウインドウ表示
-                    atv_style.disabled=false;
-                    atv_tp.textContent='デフォルト表示';
-                    atv_help.style.display='inline'; }
+            if(atv_sw && atv_tp){
+                if(sessionStorage.getItem('AmbTV_S')=='1'){
+                    set_subw(); // 🔵 サブウインドウ表示
+                    atv_tp.textContent='デフォルト表示'; }
                 else{
-                    atv_style.disabled=true;
-                    atv_tp.textContent='サブウインドウ表示';
-                    atv_help.style.display='none'; }
+                    reset_subw(); // 🔵 通常表示
+                    atv_tp.textContent='サブウインドウ表示'; }
 
                 atv_sw.onclick=function(e){
                     e.preventDefault();
-                    if(sessionStorage.getItem('AmbTV_S')=='1'){ // 🔵 サブウインドウ表示
-                        sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
-                        atv_style.disabled=true;
-                        atv_tp.textContent='サブウインドウ表示';
-                        atv_help.style.display='none'; }
+                    if(sessionStorage.getItem('AmbTV_S')=='1'){
+                        reset_subw(); // 🔵 通常表示
+                        atv_tp.textContent='サブウインドウ表示'; }
                     else{
-                        sessionStorage.setItem('AmbTV_S', '1'); // 🔵 サブウインドウ表示
-                        atv_style.disabled=false;
-                        atv_tp.textContent='デフォルト表示';
-                        atv_help.style.display='inline'; }}
+                        set_subw(); // 🔵 サブウインドウ表示
+                        atv_tp.textContent='デフォルト表示'; }}
 
 
                 let full_sw=document.querySelector('.com-vod-FullscreenButton use');
@@ -332,11 +295,9 @@ function player_env(){
                     monitor_sw.observe(full_sw, { attributes: true });
                     function sw_cont(){
                         setTimeout(()=>{
-                            if(sessionStorage.getItem('AmbTV_S')=='1'){ // 🔵 サブウインドウ表示
-                                sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
-                                atv_style.disabled=true;
-                                atv_tp.textContent='サブウインドウ表示';
-                                atv_help.style.display='none'; }
+                            if(sessionStorage.getItem('AmbTV_S')=='1'){
+                                reset_subw(); // 🔵 通常表示
+                                atv_tp.textContent='サブウインドウ表示'; }
                         }, 100); }}
 
             }} //  if(nav_b)
@@ -348,7 +309,7 @@ function player_env(){
             muted_button.click(); }
 
 
-        reset_mode();
+        set_mode();
         ex_view();
         end_roll();
 
@@ -356,17 +317,29 @@ function player_env(){
 
 
 
-    function reset_mode(){
+    function set_mode(){
         document.addEventListener('keydown', function(event){
-            if(event.keyCode==27){
+            if(event.keyCode==27){ //「ESC」キー
                 reset_subw();
-
                 let atv_style_hide=document.querySelector('.atv_style_hide');
                 if(atv_style_hide){
-                    if(atv_style_hide.disabled!=true){
-                        atv_style_hide.disabled=true; }}}});
+                    atv_style_hide.disabled=true; }}
+            else if(event.keyCode==121){ //「F10」キー
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if(sessionStorage.getItem('AmbTV_S')!='1'){
+                    set_subw();
+                    let atv_style_hide=document.querySelector('.atv_style_hide');
+                    if(atv_style_hide){
+                        atv_style_hide.disabled=false; }}
+                else{
+                    reset_subw();
+                    let atv_style_hide=document.querySelector('.atv_style_hide');
+                    if(atv_style_hide){
+                        atv_style_hide.disabled=true; }}}
+        });
 
-    } // reset_mode()
+    } // set_mode()
 
 
 
