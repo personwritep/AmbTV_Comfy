@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.5
+// @version        5.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -170,7 +170,13 @@ function player_env(){
 
             player.oncontextmenu=function(){
                 hide_con(player); } // 🟩 動画面の右クリックでコントロールを非表示
+
         }, 200);
+
+
+        setTimeout(()=>{
+            trim_play(player);
+        }, 800);
 
 
         setTimeout(()=>{
@@ -470,6 +476,27 @@ function player_env(){
                     }, 4000); }}}
 
     } // info_sw()
+
+
+
+    function trim_play(player){
+        let video_elem=player.querySelector('.com-a-Video__video-element');
+        if(video_elem){
+            document.onkeydown=function(event){
+                if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ　🔵
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    video_elem.currentTime -=2;
+                    if(video_elem.paused==false){
+                        video_elem.play(); }}
+                if(event.keyCode=='38'){ //「⇧」キー 2sec後へジャンプ　🔵
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    video_elem.currentTime +=2;
+                    if(video_elem.paused==false){
+                        video_elem.play(); }}}}
+
+    } // trim_play()
 
 } // player_env()
 
