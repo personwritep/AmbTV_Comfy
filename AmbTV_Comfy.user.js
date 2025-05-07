@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.6
+// @version        5.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -309,10 +309,9 @@ function player_env(){
             }} //  if(nav_b)
 
 
-        let muted_button=document.querySelector(
-            '.com-playback-Volume__icon-button[aria-label="音声をオンにする"]');
-        if(muted_button){
-            muted_button.click(); }
+        let video=document.querySelector('.com-a-Video__video-element');
+        if(video){
+            video.volume=1; } // ミュートをリセット
 
 
         set_mode();
