@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.7
+// @version        5.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -57,7 +57,8 @@ function player_env(){
         let CLSButton=document.querySelector('.com-content-list-ContentListSortButton');
         if(CLSButton){
             clearInterval(interval1);
-            CLSButton.click(); }}
+            CLSButton.click();
+            free_only(); }}
 
 
 
@@ -498,6 +499,53 @@ function player_env(){
     } // trim_play()
 
 } // player_env()
+
+
+
+function free_only(){
+    let clh=document.querySelector('.com-content-list-ContentListHeader__sort-button');
+    if(clh){
+        let sw=
+            '<div class="sw_free">Free Only'+
+            '<style>.sw_free { font: normal 16px Meiryo; height: 22px; padding: 0px 6px; '+
+            'margin: 9px 15px 0 0; border-radius: 4px; color: #fff; background: #0074d9; '+
+            'cursor: pointer; }</style></div>';
+        if(!document.querySelector('.sw_free')){
+            clh.insertAdjacentHTML('afterbegin', sw); }}
+
+    let swf=document.querySelector('.sw_free');
+    if(swf){
+        swf.onclick=function(event){
+            clear_all(); }}
+
+
+    function clear_all(){
+        let retry6=0;
+        let interval6=setInterval(wait_target6, 200);
+        function wait_target6(){
+            retry6++;
+            if(retry6>20){ // リトライ制限 4secまで
+                clearInterval(interval6); }
+            let more=document.querySelector('.com-content-list-ContentList__see-more-button');
+            if(more){
+                more.click(); }
+            else{
+                clearInterval(interval6);
+                setTimeout(()=>{
+                    clear();
+                }, 400); }}
+
+    } // clear_all()
+
+
+    function clear(){
+        let cli=document.querySelectorAll('.com-content-list-ContentListItem');
+        for(let k=0; k<cli.length; k++){
+            let prem=cli[k].querySelector('.com-vod-VODLabel__text--dark-premium');
+            if(prem){
+                cli[k].style.display="none"; }}}
+
+} // free_only()
 
 
 
