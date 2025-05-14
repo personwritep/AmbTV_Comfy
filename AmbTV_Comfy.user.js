@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.8
+// @version        5.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -516,10 +516,13 @@ function free_only(){
     let swf=document.querySelector('.sw_free');
     if(swf){
         swf.onclick=function(event){
-            clear_all(); }}
+            if(event.ctrlKey){
+                clear_all(1); }
+            else{
+                clear_all(0); }}}
 
 
-    function clear_all(){
+    function clear_all(n){
         let retry6=0;
         let interval6=setInterval(wait_target6, 200);
         function wait_target6(){
@@ -532,7 +535,10 @@ function free_only(){
             else{
                 clearInterval(interval6);
                 setTimeout(()=>{
-                    clear();
+                    if(n==0){
+                        clear(); }
+                    else{
+                        reset_clear(); }
                 }, 400); }}
 
     } // clear_all()
@@ -543,7 +549,12 @@ function free_only(){
         for(let k=0; k<cli.length; k++){
             let prem=cli[k].querySelector('.com-vod-VODLabel__text--dark-premium');
             if(prem){
-                cli[k].style.display="none"; }}}
+                cli[k].style.display='none'; }}}
+
+    function reset_clear(){
+        let cli=document.querySelectorAll('.com-content-list-ContentListItem');
+        for(let k=0; k<cli.length; k++){
+            cli[k].style.display='list-item'; }}
 
 } // free_only()
 
