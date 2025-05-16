@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        5.9
+// @version        6.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -507,9 +507,13 @@ function free_only(){
     if(clh){
         let sw=
             '<div class="sw_free">Free Only'+
-            '<style>.sw_free { font: normal 16px Meiryo; height: 22px; padding: 0px 6px; '+
-            'margin: 9px 15px 0 0; border-radius: 4px; color: #fff; background: #0074d9; '+
-            'cursor: pointer; }</style></div>';
+            '<style>.sw_free { font: normal 16px/22px Meiryo; height: 22px; padding: 0 6px; '+
+            'margin: 9px 12px 0 0; border: 1px solid #aaa; border-radius: 4px; color: #fff; '+
+            'background: #005167; cursor: pointer; } '+
+            '.com-content-list-ContentListSortButton__icon-wrapper { '+
+            'border: 1px solid #aaa; border-radius: 4px; } '+
+            '.com-content-list-ContentListSortButton__icon { height: 20px; width: 20px; } '+
+            '</style></div>';
         if(!document.querySelector('.sw_free')){
             clh.insertAdjacentHTML('afterbegin', sw); }}
 
@@ -523,23 +527,35 @@ function free_only(){
 
 
     function clear_all(n){
+        list_view(0);
+
         let retry6=0;
         let interval6=setInterval(wait_target6, 200);
         function wait_target6(){
             retry6++;
-            if(retry6>20){ // リトライ制限 4secまで
+            if(retry6>3){ // リトライ制限 .6secまで
+                list_view(1);
                 clearInterval(interval6); }
             let more=document.querySelector('.com-content-list-ContentList__see-more-button');
             if(more){
                 more.click(); }
             else{
-                clearInterval(interval6);
                 setTimeout(()=>{
                     if(n==0){
                         clear(); }
                     else{
                         reset_clear(); }
-                }, 400); }}
+                }, 300); }}
+
+
+        function list_view(n){
+            let ul=document.querySelector('.com-content-list-ContentListItemList');
+            if(ul){
+                ul.style.minHeight='141px';
+                if(n==0){
+                    ul.style.display='none'; }
+                else{
+                    ul.style.display='block'; }}}
 
     } // clear_all()
 
@@ -766,7 +782,7 @@ function creat_iframe(url){
         '<iframe id="notify" scrolling="no" src="'+ url +'?atv"></iframe>'+
 
         '<style>#if_wrap { position: fixed; z-index: 20; top: 0; left: 0; width: 480px; '+
-        'height: calc(100% - 22px); border: 2px solid #fff; background: #000; } '+
+        'height: 100%; border: 2px solid #fff; background: #000; } '+
         '#if_cont { display: flex; justify-content: space-between; align-items: center; '+
         'color: #fff; height: 40px; padding: 0 20px; background: #a7b8c4; } '+
         '.if_help, .if_link, .mov_link, .if_close { text-decoration: none; cursor: pointer; } '+
@@ -885,8 +901,6 @@ function set_iframe(){
         '.com-content-list-ContentListHeader__group-tab-list-container { '+
         'padding-top: 16px !important; } '+
         '.com-content-list-ContentListHeader__sort-button { margin: 0; } '+
-        '.com-content-list-ContentListSortButton__icon-wrapper { '+
-        'border: 1px solid #aaa; border-radius: 4px; } '+
         '.com-content-list-ContentListSortButton__text { display: none; } '+
 
         '.com-content-list-ContentListEpisodeItem, '+
@@ -1065,6 +1079,9 @@ function like(){
                 else{
                     lc.style.background='#999'; }}
         } // clone_disp()
+
+
+        free_only();
 
     } // like_button()
 
