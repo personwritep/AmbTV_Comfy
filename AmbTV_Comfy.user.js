@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.0
+// @version        6.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -94,7 +94,6 @@ function player_env(){
             '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
             '.c-vod-EpisodePlayerContainer-wrapper { '+
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
-            '.com-vod-VODMiniPlayerWrapper__player--mini { height: 0 !important; } '+
             '.com-vod-FullscreenInBrowserButton__screen-controller { '+
             'display: none !important; } '+
             // slots playrer
@@ -133,20 +132,19 @@ function player_env(){
             player.insertAdjacentHTML('beforeend', style); }
 
 
-        let atv_style=player.querySelector('.atv_style');
-        if(atv_style){
-            if(sessionStorage.getItem('AmbTV_S')!='1'){
-                reset_subw(); } // 🔵 通常表示
-            else{
-                set_subw(); }} // 🔵 サブウインドウ表示
+        if(sessionStorage.getItem('AmbTV_S')!='1'){
+            set_subw(0); } // 🟦 通常表示
+        else{
+            set_subw(1); } // 🟦 サブウインドウ表示
+
+        if(sessionStorage.getItem('AmbTV_H')!='1'){
+            hide_cont(0); } // 🟩 コントロール表示
+        else{
+            hide_cont(1); } // 🟩 コントロール非表示
 
         let atv_style_ex=player.querySelector('.atv_style_ex'); // 🟥 拡大表示
         if(atv_style_ex){
             atv_style_ex.disabled=true; }
-
-        let atv_style_hide=player.querySelector('.atv_style_hide'); // 🟩 コントロール非表示
-        if(atv_style_hide){
-            atv_style_hide.disabled=true; }
 
 
         ad_block(player); // ADブロック
@@ -166,11 +164,14 @@ function player_env(){
             let appeal_plan=
                 document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
             if(appeal_plan){
-                reset_subw(); } // プレミアムAD表示時に「サブウインドウ表示」をリセット
+                set_subw(0); } // プレミアムAD表示時に 🟦 通常表示にする
 
 
-            player.oncontextmenu=function(){
-                hide_con(player); } // 🟩 動画面の右クリックでコントロールを非表示
+            player.oncontextmenu=function(){// 🟩 動画面の右クリックでコントロール表示を反転
+                if(sessionStorage.getItem('AmbTV_H')!='1'){
+                    hide_cont(1); } // 🟩 コントロールを非表示
+                else{
+                    hide_cont(0); }} // 🟩 コントロール表示
 
         }, 200);
 
@@ -206,28 +207,27 @@ function player_env(){
 
 
 
-    function reset_subw(){
-        sessionStorage.setItem('AmbTV_S', '0'); // 🔵 通常表示
+    function set_subw(n){
         let atv_style=document.querySelector('.atv_style');
         if(atv_style){
-            atv_style.disabled=true; }}
-
-
-    function set_subw(){
-        sessionStorage.setItem('AmbTV_S', '1'); // 🔵 サブウインドウ表示
-        let atv_style=document.querySelector('.atv_style');
-        if(atv_style){
-            atv_style.disabled=false; }}
+            if(n==0){
+                sessionStorage.setItem('AmbTV_S', '0');
+                atv_style.disabled=true; } // 🟦 通常表示
+            if(n==1){
+                sessionStorage.setItem('AmbTV_S', '1');
+                atv_style.disabled=false; }}} // 🟦 サブウインドウ表示
 
 
 
-    function hide_con(player){
-        let atv_style_hide=player.querySelector('.atv_style_hide');
+    function hide_cont(n){
+        let atv_style_hide=document.querySelector('.atv_style_hide');
         if(atv_style_hide){
-            if(atv_style_hide.disabled==true){
-                atv_style_hide.disabled=false; }
-            else{
-                atv_style_hide.disabled=true; }}}
+            if(n==0){
+                sessionStorage.setItem('AmbTV_H', '0');
+                atv_style_hide.disabled=true; } // 🟩 コントロール表示
+            if(n==1){
+                sessionStorage.setItem('AmbTV_H', '1');
+                atv_style_hide.disabled=false; }}} // 🟩 コントロールを非表示
 
 
 
@@ -280,19 +280,19 @@ function player_env(){
             let atv_tp=document.querySelector('.atv_tp');
             if(atv_sw && atv_tp){
                 if(sessionStorage.getItem('AmbTV_S')=='1'){
-                    set_subw(); // 🔵 サブウインドウ表示
+                    set_subw(1); // 🟦 サブウインドウ表示
                     atv_tp.textContent='デフォルト表示'; }
                 else{
-                    reset_subw(); // 🔵 通常表示
+                    set_subw(0); // 🟦 通常表示
                     atv_tp.textContent='サブウインドウ表示'; }
 
                 atv_sw.onclick=function(e){
                     e.preventDefault();
                     if(sessionStorage.getItem('AmbTV_S')=='1'){
-                        reset_subw(); // 🔵 通常表示
+                        set_subw(0); // 🟦 通常表示
                         atv_tp.textContent='サブウインドウ表示'; }
                     else{
-                        set_subw(); // 🔵 サブウインドウ表示
+                        set_subw(1); // 🟦 サブウインドウ表示
                         atv_tp.textContent='デフォルト表示'; }}
 
 
@@ -303,7 +303,7 @@ function player_env(){
                     function sw_cont(){
                         setTimeout(()=>{
                             if(sessionStorage.getItem('AmbTV_S')=='1'){
-                                reset_subw(); // 🔵 通常表示
+                                set_subw(0); // 🟦 通常表示
                                 atv_tp.textContent='サブウインドウ表示'; }
                         }, 100); }}
 
@@ -326,23 +326,17 @@ function player_env(){
     function set_mode(){
         document.addEventListener('keydown', function(event){
             if(event.keyCode==27){ //「ESC」キー
-                reset_subw();
-                let atv_style_hide=document.querySelector('.atv_style_hide');
-                if(atv_style_hide){
-                    atv_style_hide.disabled=true; }}
+                set_subw(0); // 🟦 通常表示
+                hide_cont(0); } // 🟩 コントロール表示
             else if(event.keyCode==121){ //「F10」キー
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 if(sessionStorage.getItem('AmbTV_S')!='1'){
-                    set_subw();
-                    let atv_style_hide=document.querySelector('.atv_style_hide');
-                    if(atv_style_hide){
-                        atv_style_hide.disabled=false; }}
+                    set_subw(1); // 🟦 サブウインドウ表示
+                    hide_cont(1); } // 🟩 コントロールを非表示
                 else{
-                    reset_subw();
-                    let atv_style_hide=document.querySelector('.atv_style_hide');
-                    if(atv_style_hide){
-                        atv_style_hide.disabled=true; }}}
+                    set_subw(0); // 🟦 通常表示
+                    hide_cont(0); }} // 🟩 コントロール表示
         });
 
     } // set_mode()
