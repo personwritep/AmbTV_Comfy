@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.1
+// @version        6.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -488,7 +488,51 @@ function player_env(){
                     event.stopImmediatePropagation();
                     video_elem.currentTime +=2;
                     if(video_elem.paused==false){
-                        video_elem.play(); }}}}
+                        video_elem.play(); }}}
+
+        } // if(video_elem)
+
+
+
+        document.addEventListener('keydown', function(event){
+            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のコンテンツへ　🔵
+                send_page(1); }
+            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl + ⇦」 前のコンテンツへ　🔵
+                send_page(0); }});
+
+
+        function send_page(n){
+            let now=location.href;
+            now=now.split('?')[0]; // クエリ文字列を削除
+            let index=now.lastIndexOf('p');
+            let pre_num=now.substring(0, index+1);
+            let num;
+            if(n==1){
+                num=now.substring(index+1)/1+1; }
+            else if(n==0){
+                num=now.substring(index+1)/1-1; }
+
+            let next_p=pre_num + num.toString() +'?next=true'; // 次の動画の最初から
+            if(!check(next_p)){
+                location.href=next_p; }
+            else{
+                alert("⛔ 次のコンテンツが見つかりません"); }
+
+
+            function check(target_url){
+                if(load(target_url)!=200){
+                    return true; } // target_urlが無い時に true
+                function load(_url){
+                    let xhr;
+                    xhr=new XMLHttpRequest();
+                    xhr.open("HEAD", _url, false); //同期モード
+                    try{
+                        xhr.send();
+                        return xhr.status; }
+                    catch{
+                        return 404; }}}
+
+        } // send_page()
 
     } // trim_play()
 
