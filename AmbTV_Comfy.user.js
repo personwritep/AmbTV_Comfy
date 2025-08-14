@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.2
+// @version        6.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -182,11 +182,12 @@ function player_env(){
 
 
         setTimeout(()=>{
-            let play_button=player.querySelector('.com-vod-PlaybackButton');
+            let play_button=player.querySelector('.com-vod-VODScreen__button');
             if(play_button){
-                let tooltip=play_button.querySelector('.com-vod-PlaybackButton__tooltip');
-                if(tooltip.textContent=='再生 (space)'){
-                    play_button.click(); }} // 動画を連続再生で開いた時に、自動で再生開始する
+                let button=play_button.querySelector('.com-vod-VideoControlButton');
+                let tooltip=play_button.querySelector('.com-a-Tooltip');
+                if(button && tooltip.textContent=='再生 (space)'){
+                    button.click(); }} // 動画を連続再生で開いた時に、自動で再生開始する
         }, 2000);
 
     } // set_player()
@@ -232,8 +233,8 @@ function player_env(){
 
 
     function player_tool(){
-        let nav_b=document.querySelector('.com-vod-VideoControlBar__playback-rate');
-        if(nav_b){
+        let cont_r=document.querySelector('.com-vod-VideoControlBar__right');
+        if(cont_r){
             let help=
                 '<a class="atv_help" href="'+ help_url +'" target="_blank">'+
                 '<svg width="20" height="24" viewBox="0 -20 150 150">'+
@@ -246,7 +247,7 @@ function player_env(){
                 'display: none; }</style></a>';
 
             if(!document.querySelector('.atv_help')){
-                nav_b.insertAdjacentHTML('beforebegin', help); }
+                cont_r.insertAdjacentHTML('afterbegin', help); }
 
 
             let sw_svg=
@@ -265,16 +266,20 @@ function player_env(){
                 '</svg>';
 
             let sw=
-                '<button type="button" class="atv_sw com-vod-FullscreenButton">'+
-                '<div class="com-vod-FullscreenButton__tooltip">'+
-                '<div class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
-                '</div></div>'+
+                '<div class="com-vod-VODScreen__button">'+
+                '<div class="com-vod-VideoControlTooltip-wrapper">'+
+                '<button type="button" class="atv_sw com-vod-VideoControlButton">'+
                 '<span class="atv_icon">'+ sw_svg +'</span></button>'+
+                '<span class="com-vod-VideoControlTooltip">'+
+                '<span class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
+                '</span></span></div></div>'+
                 '<style>.atv_icon { width: 19px; height: 19px; } '+
                 ':fullscreen .atv_sw { display: none; }</style>';
 
-            if(!document.querySelector('.atv_sw')){
-                nav_b.insertAdjacentHTML('afterend', sw); }
+            let p_rate=cont_r.querySelector('.com-vod-VODScreen__button');
+            if(p_rate){
+                if(!document.querySelector('.atv_sw')){
+                    p_rate.insertAdjacentHTML('afterend', sw); }}
 
             let atv_sw=document.querySelector('.atv_sw');
             let atv_tp=document.querySelector('.atv_tp');
@@ -296,7 +301,8 @@ function player_env(){
                         atv_tp.textContent='デフォルト表示'; }}
 
 
-                let full_sw=document.querySelector('.com-vod-FullscreenButton use');
+                let buttons=cont_r.querySelectorAll('.com-vod-VODScreen__button');
+                let full_sw=buttons[buttons.length-1].querySelector('use');
                 if(full_sw){
                     let monitor_sw=new MutationObserver(sw_cont);
                     monitor_sw.observe(full_sw, { attributes: true });
@@ -307,7 +313,7 @@ function player_env(){
                                 atv_tp.textContent='サブウインドウ表示'; }
                         }, 100); }}
 
-            }} //  if(nav_b)
+            }} //  if(cont_r)
 
 
         let video=document.querySelector('.com-a-Video__video-element');
@@ -344,7 +350,9 @@ function player_env(){
 
 
     function ex_view(){ // 🟥 拡大表示
-        let full=document.querySelector('.com-vod-FullscreenButton__icon');
+        let buttons=document.querySelectorAll(
+            '.com-vod-VideoControlBar__right .com-vod-VODScreen__button');
+        let full=buttons[buttons.length-1].querySelector('.com-vod-VideoControlButton__icon');
         let atv_style_ex=document.querySelector('.atv_style_ex');
         if(full && atv_style_ex){
             full.onclick=(event)=>{
@@ -361,35 +369,35 @@ function player_env(){
 
 
     function end_roll(){
-        let CB_icon=document.querySelectorAll('.com-vod-VideoControlBar__icon');
-        if(CB_icon[2]){
+        let PR_icon=document.querySelector('.com-vod-VideoControlPlaybackRate__icon');
+        if(PR_icon){
             if(player_type(0) && player_type(1) && player_type(2) ){
-                CB_icon[2].style.boxShadow='10px -6px 0 -7px #fff'; }
+                PR_icon.style.boxShadow='10px -6px 0 -7px #fff'; }
             else{
-                CB_icon[2].style.boxShadow='0 -7px 0 -4px #FF9800'; }
+                PR_icon.style.boxShadow='0 -7px 0 -4px #FF9800'; }
 
             if(sessionStorage.getItem('AmbTV_E')=='1'){ // エンドロール表示モード 🔵
-                CB_icon[2].style.color='red'; }
+                PR_icon.style.color='red'; }
             else if(sessionStorage.getItem('AmbTV_E')=='2'){
-                CB_icon[2].style.color='#2196f3'; }
+                PR_icon.style.color='#2196f3'; }
             else if(sessionStorage.getItem('AmbTV_E')=='3'){
-                CB_icon[2].style.color='#44ff00'; }
+                PR_icon.style.color='#44ff00'; }
             else{
-                CB_icon[2].style.color='#fff'; }
+                PR_icon.style.color='#fff'; }
 
-            CB_icon[2].onclick=function(event){
+            PR_icon.onclick=function(event){
                 if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '2');
-                    CB_icon[2].style.color='#2196f3'; }
+                    PR_icon.style.color='#2196f3'; }
                 else if(sessionStorage.getItem('AmbTV_E')=='2'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '3');
-                    CB_icon[2].style.color='#44ff00'; }
+                    PR_icon.style.color='#44ff00'; }
                 else if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '0');
-                    CB_icon[2].style.color='#fff'; }
+                    PR_icon.style.color='#fff'; }
                 else{
                     sessionStorage.setItem('AmbTV_E', '1'); // 🔵
-                    CB_icon[2].style.color='red'; }}}
+                    PR_icon.style.color='red'; }}}
 
         let info=player_type(0);
         if(info){
