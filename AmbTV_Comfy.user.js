@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.3
+// @version        6.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -94,8 +94,8 @@ function player_env(){
             '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
             '.c-vod-EpisodePlayerContainer-wrapper { '+
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
-            '.com-vod-FullscreenInBrowserButton__screen-controller { '+
-            'display: none !important; } '+
+            '.com-vod-VideoControlBar__right .com-vod-VODScreen__button:nth-child(4) '+
+            '{ display: none; } '+
             // slots playrer
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; '+
@@ -125,7 +125,7 @@ function player_env(){
             '.c-vod-RecommendOnPlayer__recommend-content-bg { background: none; } '+
             '.com-vod-VODPlayerNextContentRecommendBase__inner { '+
             'padding: 10px; background: rgb(0 0 0 / 50%); } '+
-            '.com-video-EpisodePlayerSectionExternalContent { display: none; }'+ // 🟠 AD
+            '.com-video-EpisodePlayerSectionExternalContent { display: none; }'+ // 🟠 見放題AD
             '</style>';
 
         if(!player.querySelector('.atv_style')){
@@ -172,7 +172,6 @@ function player_env(){
                     hide_cont(1); } // 🟩 コントロールを非表示
                 else{
                     hide_cont(0); }} // 🟩 コントロール表示
-
         }, 200);
 
 
@@ -272,14 +271,15 @@ function player_env(){
                 '<span class="atv_icon">'+ sw_svg +'</span></button>'+
                 '<span class="com-vod-VideoControlTooltip">'+
                 '<span class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
-                '</span></span></div></div>'+
+                '</span></span></div>'+
                 '<style>.atv_icon { width: 19px; height: 19px; } '+
-                ':fullscreen .atv_sw { display: none; }</style>';
+                ':fullscreen .atv_sw { display: none; }</style></div>';
 
             let p_rate=cont_r.querySelector('.com-vod-VODScreen__button');
             if(p_rate){
                 if(!document.querySelector('.atv_sw')){
                     p_rate.insertAdjacentHTML('afterend', sw); }}
+
 
             let atv_sw=document.querySelector('.atv_sw');
             let atv_tp=document.querySelector('.atv_tp');
@@ -302,16 +302,18 @@ function player_env(){
 
 
                 let buttons=cont_r.querySelectorAll('.com-vod-VODScreen__button');
-                let full_sw=buttons[buttons.length-1].querySelector('use');
+                let full_sw=buttons[buttons.length-1];
                 if(full_sw){
-                    let monitor_sw=new MutationObserver(sw_cont);
-                    monitor_sw.observe(full_sw, { attributes: true });
-                    function sw_cont(){
-                        setTimeout(()=>{
-                            if(sessionStorage.getItem('AmbTV_S')=='1'){
-                                set_subw(0); // 🟦 通常表示
-                                atv_tp.textContent='サブウインドウ表示'; }
-                        }, 100); }}
+                    let ues=full_sw.querySelector('use');
+                    if(ues){
+                        let monitor_sw=new MutationObserver(sw_cont);
+                        monitor_sw.observe(ues, { attributes: true });
+                        function sw_cont(){
+                            setTimeout(()=>{
+                                if(sessionStorage.getItem('AmbTV_S')=='1'){
+                                    set_subw(0); // 🟦 通常表示
+                                    atv_tp.textContent='サブウインドウ表示'; }
+                            }, 100); }}}
 
             }} //  if(cont_r)
 
@@ -352,19 +354,21 @@ function player_env(){
     function ex_view(){ // 🟥 拡大表示
         let buttons=document.querySelectorAll(
             '.com-vod-VideoControlBar__right .com-vod-VODScreen__button');
-        let full=buttons[buttons.length-1].querySelector('.com-vod-VideoControlButton__icon');
-        let atv_style_ex=document.querySelector('.atv_style_ex');
-        if(full && atv_style_ex){
-            full.onclick=(event)=>{
-                if(event.ctrlKey){
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    if(atv_style_ex.disabled==true){
-                        atv_style_ex.disabled=false;
-                        full.style.color='red'; }
-                    else{
-                        atv_style_ex.disabled=true;
-                        full.style.color='#fff';}}}}}
+        let full_sw=buttons[buttons.length-1];
+        if(full_sw){
+            let full_icon=full_sw.querySelector('.com-vod-VideoControlButton__icon');
+            let atv_style_ex=document.querySelector('.atv_style_ex');
+            if(full_icon && atv_style_ex){
+                full_icon.onclick=(event)=>{
+                    if(event.ctrlKey){
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        if(atv_style_ex.disabled==true){
+                            atv_style_ex.disabled=false;
+                            full_icon.style.color='red'; }
+                        else{
+                            atv_style_ex.disabled=true;
+                            full_icon.style.color='#fff';}}}}}}
 
 
 
@@ -737,7 +741,7 @@ function set_if(target){
         if(List){
             List.style.outline='2px solid #fff'; }
 
-        let Card=target.closest('.com-feature-area-CardItem');
+        let Card=target.closest('.com-shared-feature-area-CardItem');
         if(Card){
             if(!Card.closest('.c-home-HomeContainerView-TvAreaContainer')){
                 Card.style.outline='2px solid #fff'; }}
@@ -757,7 +761,7 @@ function set_if(target){
         for(let k=0; k<lists.length; k++){
             lists[k].style.outline=''; }
 
-        let cards=document.querySelectorAll('.com-feature-area-CardItem');
+        let cards=document.querySelectorAll('.com-shared-feature-area-CardItem');
         for(let k=0; k<cards.length; k++){
             cards[k].style.outline=''; }
 
@@ -902,7 +906,7 @@ function if_close(){
         if_wrap.remove();
 
         setTimeout(()=>{
-            let cards=document.querySelectorAll('.com-feature-area-CardItem');
+            let cards=document.querySelectorAll('.com-shared-feature-area-CardItem');
             for(let k=0; k<cards.length; k++){
                 let style=cards[k].getAttribute('style');
                 if(style && style.includes('2px')){
