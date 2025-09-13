@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.4
+// @version        6.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -94,7 +94,7 @@ function player_env(){
             '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
             '.c-vod-EpisodePlayerContainer-wrapper { '+
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
-            '.com-vod-VideoControlBar__right .com-vod-VODScreen__button:nth-child(4) '+
+            '.com-vod-VideoControlBar__right .com-vod-VODScreen__button:nth-last-child(3) '+
             '{ display: none; } '+
             // slots playrer
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
@@ -232,6 +232,14 @@ function player_env(){
 
 
     function player_tool(){
+
+        function sw_rate(){
+            let rate=document.querySelector('.com-vod-VideoControlPlaybackRate');
+            if(rate){
+                let rate_sw=rate.closest('.com-vod-VODScreen__button');
+                if(rate_sw){
+                    return rate_sw; }}}
+
         let cont_r=document.querySelector('.com-vod-VideoControlBar__right');
         if(cont_r){
             let help=
@@ -275,7 +283,7 @@ function player_env(){
                 '<style>.atv_icon { width: 19px; height: 19px; } '+
                 ':fullscreen .atv_sw { display: none; }</style></div>';
 
-            let p_rate=cont_r.querySelector('.com-vod-VODScreen__button');
+            let p_rate=sw_rate();
             if(p_rate){
                 if(!document.querySelector('.atv_sw')){
                     p_rate.insertAdjacentHTML('afterend', sw); }}
