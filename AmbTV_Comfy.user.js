@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.5
+// @version        6.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -724,6 +724,7 @@ function set_if(target){
     if(!location.pathname.includes('/timetable')){
         if(url.includes('/video/episode/') || url.includes('/video/title/') ||
            url.includes('/channels/') || url.includes('/live-event/') || url.includes('/slot-group/')){
+            url=url.split('?')[0];
             creat_iframe(url); }
         else{ // 上記以外のリンクの場合
             if_close(); }}
@@ -751,12 +752,19 @@ function set_if(target){
 
         let Card=target.closest('.com-shared-feature-area-CardItem');
         if(Card){
-            if(!Card.closest('.c-home-HomeContainerView-TvAreaContainer')){
-                Card.style.outline='2px solid #fff'; }}
+            Card.style.outline='2px solid #fff'; }
 
-        let Ranking=target.closest('.com-feature-area-FeatureRankingItem');
-        if(Ranking){
-            Ranking.style.outline='2px solid #fff'; }
+        let Ranking0=target.closest('.com-shared-feature-area-RankingItem__link-wrapper');
+        if(Ranking0){
+            Ranking0.style.outline='2px solid #fff'; }
+
+        let Ranking1=target.closest('.com-shared-feature-area-RankingCardItem');
+        if(Ranking1){
+            Ranking1.style.outline='2px solid #fff'; }
+
+        let Original=target.closest('.com-shared-feature-area-FeatureOriginalLimitedItem');
+        if(Original){
+            Original.style.outline='2px solid #fff'; }
 
         setTimeout(()=>{
             scroll_center(target);
@@ -773,9 +781,19 @@ function set_if(target){
         for(let k=0; k<cards.length; k++){
             cards[k].style.outline=''; }
 
-        let rankings=document.querySelectorAll('.com-feature-area-FeatureRankingItem');
-        for(let k=0; k<rankings.length; k++){
-            rankings[k].style.outline=''; }}
+        let rankings0=
+            document.querySelectorAll('.com-shared-feature-area-RankingItem__link-wrapper');
+        for(let k=0; k<rankings0.length; k++){
+            rankings0[k].style.outline=''; }
+
+        let rankings1=document.querySelectorAll('.com-shared-feature-area-RankingCardItem');
+        for(let k=0; k<rankings1.length; k++){
+            rankings1[k].style.outline=''; }
+
+        let Originals=
+            document.querySelectorAll('.com-shared-feature-area-FeatureOriginalLimitedItem');
+        for(let k=0; k<Originals.length; k++){
+            Originals[k].style.outline=''; }}
 
 } //set_if()
 
@@ -1158,19 +1176,26 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
             let elem=document.elementFromPoint(event.clientX, event.clientY);
             let link_elem=elem.closest('a');
             let thum_elem;
+            let card_elem;
 
-            if(elem.closest('.com-m-PortraitThumbnail')){
+            if(elem.closest('.com-shared-feature-area-CardItem')){
+                card_elem=elem.closest('.com-shared-feature-area-CardItem');
+                thum_elem=card_elem.querySelector('.com-shared-feature-area-CardItem__thumb'); }
+            else if(elem.closest('.com-m-PortraitThumbnail')){
                 thum_elem=elem.closest('.com-m-PortraitThumbnail'); }
-            else if(elem.closest('.com-m-Thumbnail')){
-                thum_elem=elem.closest('.com-m-Thumbnail'); }
-            else if(elem.closest('.com-content-list-ContentListEpisodeItem')){
-                thum_elem=elem.closest('.com-content-list-ContentListEpisodeItem'); }
+            else if(elem.querySelector('.com-feature-area-LimitedContentThumbnail')){
+                thum_elem=elem.querySelector('.com-feature-area-LimitedContentThumbnail'); }
+            else if(elem.closest('.com-shared-feature-area-RankingCardItem')){
+                card_elem=elem.closest('.com-shared-feature-area-RankingCardItem');
+                thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
             else if(elem.closest('.com-feature-area-SeriesListItem')){
-                thum_elem=elem.closest('.com-feature-area-SeriesListItem'); }
-            else if(elem.closest('.com-content-list-ContentListItem')){
-                thum_elem=elem.closest('.com-content-list-ContentListItem'); }
-            else if(elem.closest('.com-feature-area-EpisodeListItem')){
-                thum_elem=elem.closest('.com-feature-area-EpisodeListItem'); }
+                card_elem=elem.closest('.com-feature-area-SeriesListItem');
+                thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
+            else if(elem.closest('.com-timetable-SideSlotDetailThumbnail')){
+                card_elem=elem.closest('.com-timetable-SideSlotDetailThumbnail');
+                thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
+
+
 
             if(thum_elem){
                 set_link(link_elem);
@@ -1291,13 +1316,22 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
         if(lightbox){
             lightbox.onclick=function(event){
                 event.preventDefault();
+                do_close(); }
+
+            lightbox.oncontextmenu=function(event){
+                event.preventDefault();
+                do_close(); }
+
+            function do_close(){
                 html_.style.overflow='inherit';
                 lightbox.classList.remove('fin');
                 lightbox.classList.add('fout');
                 setTimeout(()=>{
                     lightbox.style.visibility='hidden';
                     box_img.src='';
-                }, 200); }}}
+                }, 200); }}
+
+    } // close()
 
 
 
