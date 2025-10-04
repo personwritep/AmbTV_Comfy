@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.6
+// @version        6.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -323,7 +323,7 @@ function player_env(){
                                     atv_tp.textContent='サブウインドウ表示'; }
                             }, 100); }}}
 
-            }} //  if(cont_r)
+            }} // if(cont_r)
 
 
         let video=document.querySelector('.com-a-Video__video-element');
@@ -909,8 +909,7 @@ function creat_iframe(url){
             if(!CL){
                 let mlb_reset=
                     '<style>'+
-                    '.com-my-list-EpisodeMyListCircleButtonWithSelectList__select-list, '+
-                    '.com-my-list-SlotMyListCircleButtonWithSelectList__select-list { display: unset; } '+
+                    '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: unset; } '+
                     '</style>';
                 if_n.contentWindow.document.body.insertAdjacentHTML('beforeend', mlb_reset);
             }}, 2000); // 2sec後
@@ -1024,8 +1023,7 @@ function set_iframe(){
         '.com-application-NotificationToast { gap: 0; height: 40px; padding: 0 10px; } '+
         '.com-application-NotificationToast__button-wrapper, '+
         '.com-application-NotificationToast__close-button { display: none; } '+
-        '.com-my-list-EpisodeMyListCircleButtonWithSelectList__select-list, '+
-        '.com-my-list-SlotMyListCircleButtonWithSelectList__select-list { display: none; } '+
+        '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: none; } '+
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
         // slot-group
@@ -1091,15 +1089,13 @@ function like(){
         s_button.insertAdjacentHTML('afterend', l_c);
 
         let like_clone=document.querySelector('.like_clone');
-        let c_button=document.querySelector('.com-my-list-MyListBaseCircleButton__button');
-        let select_list=document.querySelector(
-            '.com-my-list-EpisodeMyListCircleButtonWithSelectList__select-list');
-        let select_list_s=document.querySelector(
-            '.com-my-list-SlotMyListCircleButtonWithSelectList__select-list');
+        let c_button=document.querySelector('.com-shared-my-list-MyListBaseCircleButton__button');
+        let popover=document.querySelector('.com-shared-my-list-MylistPopover');
         if(like_clone && c_button){
-            if(select_list || select_list_s){ // 登録選択の小パネルがある場合（動画プレーヤー画面）
-                if(select_list_s){
-                    like_clone.style.color='#000'; }
+            if(popover){ // 登録選択の小パネルがある場合（動画プレーヤー画面）
+
+                //              if(select_list_s){
+                //              like_clone.style.color='#000'; } // 毎回追加型のボタンデザイン
 
                 c_button.click();
                 setTimeout(()=>{
@@ -1117,39 +1113,37 @@ function like(){
                     setTimeout(()=>{
                         clone_disp(like_clone);
                     }, 200); }}
-
             else{ // 登録選択の小パネルがない場合（動画タイトル画面）
                 clone_disp(like_clone);
                 like_clone.onclick=function(){
                     c_button.click();
                     setTimeout(()=>{
                         clone_disp(like_clone);
-                    }, 200); }}}
+                    }, 200); }}
 
+        } // if(like_clone && c_button)
 
 
         function if_video(){
             let select_b=
-                document.querySelector('.com-my-list-MyListButtonSelectListItem__container');
+                document.querySelector('.com-shared-my-list-MyListButtonSelectListItem__container');
             if(select_b){
                 select_b.click(); }}
 
 
-
         function clone_disp(lc){
             let select_b=
-                document.querySelector('.com-my-list-MyListButtonSelectListItem__container');
+                document.querySelector('.com-shared-my-list-MyListButtonSelectListItem__container');
             if(select_b){ // 動画シリーズのマイリスト登録の場合
                 let is_added=select_b.querySelector(
-                    '.com-my-list-MyListButtonSelectListItem__left-container--is-added');
+                    '.com-shared-my-list-MyListButtonSelectListItem__left-container--is-added');
                 if(is_added){
                     lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
                 else{
                     lc.style.background='#999'; }}
-
             else{ // 登録選択の小パネルがない場合　毎回追加型にはない
                 let outline_active=document.querySelector(
-                    '.com-my-list-MyListBaseCircleButton__button-outline--active');
+                    '.com-shared-my-list-MyListBaseCircleButton__button-outline--active');
                 if(outline_active){
                     lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
                 else{
