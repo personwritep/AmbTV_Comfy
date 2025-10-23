@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.7
+// @version        6.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -41,7 +41,7 @@ function player_env(){
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0); }
         let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerView__player');
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
         if(player){
             clearInterval(interval0);
             set_player(player); }}
@@ -68,14 +68,15 @@ function player_env(){
             '.c-common-HeaderContainer-header, '+
             '.c-application-SideNavigation, '+
             '.c-application-SideNavigation--collapsed, '+
-            '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended'+
-            ' { display: none !important; } '+
-            '.c-video-EpisodeContainerView-breadcrumb, '+
-            '.com-vod-VODRecommendedContentsContainerView__details, '+
-            '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
+            '.c-video-EpisodeContainerView-breadcrumb { display: none !important; } '+
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__above--show-player-aside '+
+            '{ display: block; } '+
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__details-and-episode-list, '+
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__player-aside-recommended, '+
             '.com-feature-area-FeatureRecommendedArea__section, '+
             '.c-video-EpisodeContainerView__page-bottom, '+
             '.c-application-FooterContainer { display: none; } '+
+
             '.c-application-DesktopAppContainer__content-container { '+
             'align-items: center; height: 100vh; } '+
             '.c-application-DesktopAppContainer__content { min-width: 400px !important; } '+
@@ -83,9 +84,7 @@ function player_env(){
             'margin: 0 !important; padding: 0 !important; overflow: hidden; '+
             '--com-vod-VODResponsiveMainContent--content-min-width: 500 !important; } '+
             '.com-vod-VODResponsiveMainContent__inner { max-width: unset !important; } '+
-            '.com-vod-VODRecommendedContentsContainerView__player-and-details '+
-            '{ margin-right: 0 !important; } '+
-            '.com-vod-VODRecommendedContentsContainerView__player '+
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__player '+
             '{ margin: 6px !important; } '+
             '.com-vod-VODMiniPlayerWrapper:before { display: none !important; } '+
             '.com-vod-VODMiniPlayerWrapper__player--bg { display: none !important; } '+
@@ -96,6 +95,7 @@ function player_env(){
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
             '.com-vod-VideoControlBar__right .com-vod-VODScreen__button:nth-last-child(3) '+
             '{ display: none; } '+
+
             // slots playrer
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; '+
@@ -122,6 +122,7 @@ function player_env(){
             '.com-a-Slider__highlighter { background-color: #2196f3 !important; } '+
             '.com-vod-VODScreen__video-control-bg { '+
             'height: 60px !important; background: rgba(0,0,0,0.5) !important; } '+
+
             '.c-vod-RecommendOnPlayer__recommend-content-bg { background: none; } '+
             '.com-vod-VODPlayerNextContentRecommendBase__inner { '+
             'padding: 10px; background: rgb(0 0 0 / 50%); } '+
@@ -423,8 +424,7 @@ function player_env(){
 
     function player_type(n){
         let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerView__player');
-
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
         let cancel;
         if(player){
             let pb=player.querySelectorAll('button');
@@ -458,8 +458,7 @@ function player_env(){
 
     function info_sw(){
         let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerView__player');
-
+            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
         let cancel=player_type(1);
         let next=player_type(2);
         let SeekBar=player.querySelector('.com-playback-SeekBar__highlighter');
