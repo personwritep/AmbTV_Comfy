@@ -102,7 +102,7 @@ function player_env(){
             '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended, '+
             '.c-tv-TimeshiftSlotContainerView__page-bottom { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; height: calc(100vh - 12px) !important; } '+
-            
+
             // help
             '.atv_help { display: inline; } '+
             '</style>'+
