@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.8
+// @version        6.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -40,8 +40,7 @@ function player_env(){
         retry0++;
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0); }
-        let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
+        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
         if(player){
             clearInterval(interval0);
             set_player(player); }}
@@ -67,7 +66,6 @@ function player_env(){
             '<style class="atv_style">'+
             '.c-common-HeaderContainer-header, '+
             '.c-application-SideNavigation, '+
-            '.c-application-SideNavigation--collapsed, '+
             '.c-video-EpisodeContainerView-breadcrumb { display: none !important; } '+
             '.com-vod-VODRecommendedContentsContainerViewEpisode__above--show-player-aside '+
             '{ display: block; } '+
@@ -84,8 +82,7 @@ function player_env(){
             'margin: 0 !important; padding: 0 !important; overflow: hidden; '+
             '--com-vod-VODResponsiveMainContent--content-min-width: 500 !important; } '+
             '.com-vod-VODResponsiveMainContent__inner { max-width: unset !important; } '+
-            '.com-vod-VODRecommendedContentsContainerViewEpisode__player '+
-            '{ margin: 6px !important; } '+
+            '.com-vod-VODMiniPlayerWrapper { padding: 6px !important; } '+
             '.com-vod-VODMiniPlayerWrapper:before { display: none !important; } '+
             '.com-vod-VODMiniPlayerWrapper__player--bg { display: none !important; } '+
             '.com-vod-VODMiniPlayerWrapper__player { position: relative !important; '+
@@ -98,6 +95,12 @@ function player_env(){
 
             // slots playrer
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player-and-details { margin-right: 0; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player { margin-bottom: 0; } '+
+            '.com-vod-VODRecommendedContentsContainerView__details, '+
+            '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
+            '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended, '+
+            '.c-tv-TimeshiftSlotContainerView__page-bottom { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { padding: 0; '+
             'height: calc(100vh - 12px) !important; } '+
             // help
@@ -423,8 +426,7 @@ function player_env(){
 
 
     function player_type(n){
-        let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
+        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
         let cancel;
         if(player){
             let pb=player.querySelectorAll('button');
@@ -457,8 +459,7 @@ function player_env(){
 
 
     function info_sw(){
-        let player=document.querySelector(
-            '.com-vod-VODRecommendedContentsContainerViewEpisode__player');
+        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
         let cancel=player_type(1);
         let next=player_type(2);
         let SeekBar=player.querySelector('.com-playback-SeekBar__highlighter');
