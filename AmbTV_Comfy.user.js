@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        6.9
+// @version        7.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -40,7 +40,9 @@ function player_env(){
         retry0++;
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0); }
-        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
+        let player=document.querySelector('.c-vod-EpisodePlayerContainer-wrapper'); // player
+        if(!player){
+            player=document.querySelector('.c-tv-TimeshiftPlayerContainerView'); } // slots playrer
         if(player){
             clearInterval(interval0);
             set_player(player); }}
@@ -155,28 +157,23 @@ function player_env(){
 
 
         setTimeout(()=>{
-            let wrap;
-            if(player.querySelector('.c-vod-EpisodePlayerContainer-wrapper')){
-                wrap=player.querySelector('.c-vod-EpisodePlayerContainer-wrapper'); }
-            else if(player.querySelector('.c-tv-TimeshiftPlayerContainerView')){
-                wrap=player.querySelector('.c-tv-TimeshiftPlayerContainerView'); }
-            if(wrap){
-                let monitor1=new MutationObserver(player_tool); // 機能アイコンを設置
-                monitor1.observe(wrap, { childList: true }); }
-
-
-            let appeal_plan=
-                document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
-            if(appeal_plan){
-                set_subw(0); } // プレミアムAD表示時に 🟦 通常表示にする
-
+            let monitor1=new MutationObserver(player_tool); // 機能アイコンを設置
+            monitor1.observe(player, { childList: true });
 
             player.oncontextmenu=function(){// 🟩 動画面の右クリックでコントロール表示を反転
                 if(sessionStorage.getItem('AmbTV_H')!='1'){
                     hide_cont(1); } // 🟩 コントロールを非表示
                 else{
                     hide_cont(0); }} // 🟩 コントロール表示
-        }, 200);
+        }, 40);
+
+
+        setTimeout(()=>{
+            let appeal_plan=
+                document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
+            if(appeal_plan){
+                set_subw(0); } // プレミアムAD表示時に 🟦 通常表示にする
+        }, 100);
 
 
         setTimeout(()=>{
