@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.1
+// @version        7.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -721,7 +721,8 @@ function set_if(target){
     if(!location.pathname.includes('/timetable')){
         if(url.includes('/video/episode/') || url.includes('/video/title/') ||
            url.includes('/channels/') || url.includes('/live-event/') || url.includes('/slot-group/')){
-            url=url.split('?')[0];
+            //            url=url.split('?')[0];
+
             creat_iframe(url); }
         else{ // 上記以外のリンクの場合
             if_close(); }}
@@ -966,7 +967,7 @@ function set_iframe(){
         '.com-content-list-ContentList, '+
         '.com-slot-group-SlotList, '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
-        'position: fixed; top: 0; left: 0; z-index: 30; width: 476px; '+
+        'position: fixed; top: 0; left: 0; z-index: 31; width: 476px; '+
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'top: 15px; margin-left: 8px; } '+
@@ -1023,6 +1024,7 @@ function set_iframe(){
         '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: none; } '+
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
+
         // slot-group
         '.com-my-list-MyListBaseItem { overflow: hidden; } '+
         '.com-my-list-MyListBaseItem__wrapper { margin: 0 8px; } '+
@@ -1089,11 +1091,7 @@ function like(){
         let c_button=document.querySelector('.com-shared-my-list-MyListBaseCircleButton__button');
         let popover=document.querySelector('.com-shared-my-list-MylistPopover');
         if(like_clone && c_button){
-            if(popover){ // 登録選択の小パネルがある場合（動画プレーヤー画面）
-
-                //              if(select_list_s){
-                //              like_clone.style.color='#000'; } // 毎回追加型のボタンデザイン
-
+            if(popover){ // 動画プレーヤー画面（小パネルを開きシリーズ登録の操作）
                 c_button.click();
                 setTimeout(()=>{
                     clone_disp(like_clone);
@@ -1110,7 +1108,7 @@ function like(){
                     setTimeout(()=>{
                         clone_disp(like_clone);
                     }, 200); }}
-            else{ // 登録選択の小パネルがない場合（動画タイトル画面）
+            else{ // 書庫トップ画面（小パネルがないシリーズ登録の操作）
                 clone_disp(like_clone);
                 like_clone.onclick=function(){
                     c_button.click();
@@ -1135,16 +1133,26 @@ function like(){
                 let is_added=select_b.querySelector(
                     '.com-shared-my-list-MyListButtonSelectListItem__left-container--is-added');
                 if(is_added){
-                    lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
+                    lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)';
+                    if(is_slot(is_added)){
+                        lc.style.color='#000'; }}
                 else{
-                    lc.style.background='#999'; }}
-            else{ // 登録選択の小パネルがない場合　毎回追加型にはない
+                    lc.style.background='#999';
+                    lc.style.color='transparent'; }}
+            else{ // 登録選択の小パネルがない場合（毎回追加型の場合もない）
                 let outline_active=document.querySelector(
                     '.com-shared-my-list-MyListBaseCircleButton__button-outline--active');
                 if(outline_active){
                     lc.style.background='linear-gradient(#fff 0px, #ffcc00 10px, #e65100 30px)'; }
                 else{
                     lc.style.background='#999'; }}
+
+
+            function is_slot(is_added){ // 毎回追加の判定
+                let label=is_added.nextElementSibling;
+                if(label.textContent.includes('毎回追加')){
+                    return true; }}
+
         } // clone_disp()
 
 
