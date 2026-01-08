@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.2
+// @version        7.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -14,7 +14,7 @@
 
 let help_url='https://ameblo.jp/personwritep/entry-12800867556.html'
 
-if(window.location.search!='?atv'){ // 通常の画面
+if(!is_atv()){ // 通常の画面
     let target=document.querySelector('head > title');
     let monitor=new MutationObserver(player_env);
     monitor.observe(target, { childList: true });
@@ -28,6 +28,12 @@ else{ // 配信リスト iframe内のみ
     set_iframe();
     like();
     quiet(); }
+
+
+function is_atv(){
+    let q=window.location.search;
+    if(q && q.includes('atv_if')){
+        return true; }}
 
 
 
@@ -691,6 +697,7 @@ function disp_list(){ //「配信リスト表示」
                                     if(close){
                                         close.click(); }
                                     let url=list_link.getAttribute('href');
+                                    url=url+'?atv_if';
                                     creat_iframe(url); }}}
                     }, 100); }}
             else{
@@ -721,13 +728,16 @@ function set_if(target){
     if(!location.pathname.includes('/timetable')){
         if(url.includes('/video/episode/') || url.includes('/video/title/') ||
            url.includes('/channels/') || url.includes('/live-event/') || url.includes('/slot-group/')){
-            //            url=url.split('?')[0];
-
+            if(url.includes('?')){
+                url=url+'&atv_if'; }
+            else{
+                url=url+'?atv_if'; }
             creat_iframe(url); }
         else{ // 上記以外のリンクの場合
             if_close(); }}
     else{
         if(!url.includes('/now-on-air/')){
+            url=url+'?atv_if';
             creat_iframe(url); }
         else{
             on_air(target); }}
@@ -739,6 +749,7 @@ function set_if(target){
         if(parent){
             let list_link=parent.querySelector('.com-a-Button--primary-dark');
             let url=list_link.getAttribute('href');
+            url=url+'?atv_if';
             creat_iframe(url); }}
 
 
@@ -853,8 +864,8 @@ function creat_iframe(url){
         '<span class="t"> Movie Page</span></a>'+
         '<span class="if_close">'+ cross_SVG +'</span>'+
         '</div>'+
-        '<iframe id="notify" scrolling="no" src="'+ url +'?atv"></iframe>'+
 
+        '<iframe id="notify" scrolling="no" src="'+ url +'"></iframe>'+
         '<style>#if_wrap { position: fixed; z-index: 20; top: 0; left: 0; width: 480px; '+
         'height: 100%; border: 2px solid #fff; background: #000; } '+
         '#if_cont { display: flex; justify-content: space-between; align-items: center; '+
@@ -971,6 +982,14 @@ function set_iframe(){
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'top: 15px; margin-left: 8px; } '+
+
+        '.com-o-Carousel__slide-list-inner { margin-left: 40px !important; } '+
+        '.com-o-Carousel__arrow-button { width: 8%; } '+
+        '.com-o-Carousel__gradient { width: 90vw; } '+
+        '.com-content-list-SeasonTab__thumbnail-watch-icon-background { background: none; } '+
+        '.com-content-list-SeasonTab__thumbnail-watch-icon { '+
+        'background: #000; border-radius: 50%; } '+
+
         '.com-content-list-ContentListHeader__group-tab-list-container { '+
         'padding-top: 16px !important; } '+
         '.com-content-list-ContentListHeader__sort-button { margin: 0; } '+
