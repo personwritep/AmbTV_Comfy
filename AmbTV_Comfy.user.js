@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.3
+// @version        7.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -681,27 +681,39 @@ function disp_list(){ //「配信リスト表示」
                 setTimeout(()=>{
                     if_close(); }, 1000); }}
         else{
-            if(event.ctrlKey){
-                disp_ssd(0);
-                let table_item=elem.closest('.com-timetable-TimetableItem');
-                if(table_item){
-                    setTimeout(()=>{
-                        let ssd_wrap=document.querySelectorAll(
-                            '.com-timetable-TimeTableSideSlotDetail__side-slot-detail-wrapper');
-                        for(let k=0; k<ssd_wrap.length; k++){
-                            if(ssd_wrap[k].style.zIndex=='2'){
-                                let list_link=ssd_wrap[k].querySelector('.com-a-Button--primary-dark');
-                                if(list_link){
-                                    let close=
-                                        ssd_wrap[k].querySelector('.com-timetable-SideSlotDetail__close');
-                                    if(close){
-                                        close.click(); }
-                                    let url=list_link.getAttribute('href');
-                                    url=url+'?atv_if';
-                                    creat_iframe(url); }}}
-                    }, 100); }}
-            else{
-                disp_ssd(1); }}
+            if(location.pathname.includes('/timetable')){ // 番組表の一覧を選択した場合
+                if(event.ctrlKey){
+                    disp_ssd(0);
+                    let table_item=elem.closest('.com-timetable-TimetableItem');
+                    if(table_item){
+                        setTimeout(()=>{
+                            let ssd_wrap=document.querySelectorAll(
+                                '.com-timetable-TimeTableSideSlotDetail__side-slot-detail-wrapper');
+                            for(let k=0; k<ssd_wrap.length; k++){
+                                if(ssd_wrap[k].style.zIndex=='2'){
+                                    let list_link=ssd_wrap[k].querySelector('.com-a-Button--primary-dark');
+                                    if(list_link){
+                                        let close=
+                                            ssd_wrap[k].querySelector('.com-timetable-SideSlotDetail__close');
+                                        if(close){
+                                            close.click(); }
+                                        let url=list_link.getAttribute('href');
+                                        url=url+'?atv_if';
+                                        creat_iframe(url); }}}
+                        }, 100); }}
+                else{
+                    disp_ssd(1); }}
+            else if(!location.pathname.includes('/timetable')){
+                if(!location.pathname.includes('/video/title/')){
+                    if(event.ctrlKey){ // 動画再生中でリンクが無いリスト項目から配信リストを表示する
+                        let li_elem=elem.closest('.com-content-list-ContentListEpisodeItem');
+                        if(li_elem){
+                            let url=location.href;
+                            if(url.includes('?')){
+                                url=url+'&atv_if'; }
+                            else{
+                                url=url+'?atv_if'; }
+                            creat_iframe(url); }}}}}
 
 
         function disp_ssd(n){
@@ -956,17 +968,28 @@ function list_link_if(){
         if(link_elem){
             let url=link_elem.getAttribute('href');
             if(url){
-                window.parent.location.href=url; }}});
+                window.parent.location.href=url; }}
+        else{
+            let li_elem=elem.closest('.com-content-list-ContentListEpisodeItem');
+            if(li_elem){ // 再生中でリンクが無いリスト項目の場合
+                let url=location.href;
+                if(url.includes('&atv_if')){
+                    url=url.replace('&atv_if', ''); }
+                else if(url.includes('?atv_if')){
+                    url=url.replace('?atv_if', ''); }
+                window.parent.location.href=url; }}
+    });
 
 
     let mov_l=window.parent.document.querySelector('.mov_link');
     if(mov_l){
         mov_l.onclick=()=>{
-            let first_link=document.querySelector('.com-content-list-ContentListItem:last-child a');
-            if(first_link){
-                let m_url=first_link.getAttribute('href');
-                if(m_url){
-                    window.parent.location.href=m_url; }}}}
+            let url=location.href;
+            if(url.includes('&atv_if')){
+                url=url.replace('&atv_if', ''); }
+            else if(url.includes('?atv_if')){
+                url=url.replace('?atv_if', ''); }
+            window.parent.location.href=url; }}
 
 } // list_link_if()
 
