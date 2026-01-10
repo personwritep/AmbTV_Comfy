@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.4
+// @version        7.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -739,7 +739,8 @@ function set_if(target){
 
     if(!location.pathname.includes('/timetable')){
         if(url.includes('/video/episode/') || url.includes('/video/title/') ||
-           url.includes('/channels/') || url.includes('/live-event/') || url.includes('/slot-group/')){
+           (url.includes('/channels/') && url.includes('/slots/')) ||
+           url.includes('/live-event/') || url.includes('/slot-group/')){
             if(url.includes('?')){
                 url=url+'&atv_if'; }
             else{
@@ -748,11 +749,12 @@ function set_if(target){
         else{ // 上記以外のリンクの場合
             if_close(); }}
     else{
-        if(!url.includes('/now-on-air/')){
-            url=url+'?atv_if';
-            creat_iframe(url); }
+        if(url.includes('/now-on-air/')){
+            on_air(target); }
         else{
-            on_air(target); }}
+            if(url.includes('/slots/')){
+                url=url+'?atv_if';
+                creat_iframe(url); }}}
 
 
 
@@ -1004,7 +1006,7 @@ function set_iframe(){
         'position: fixed; top: 0; left: 0; z-index: 31; width: 476px; '+
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
-        'top: 15px; margin-left: 8px; } '+
+        'padding: 40px 0 0 8px; } '+
 
         '.com-o-Carousel__slide-list-inner { margin-left: 40px !important; } '+
         '.com-o-Carousel__arrow-button { width: 8%; } '+
@@ -1066,6 +1068,7 @@ function set_iframe(){
         '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: none; } '+
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
+        '.com-tv-SlotActionButtonsBlock { display: none; } '+
 
         // slot-group
         '.com-my-list-MyListBaseItem { overflow: hidden; } '+
@@ -1114,10 +1117,15 @@ function like(){
             let s_button=document.querySelector('.com-content-list-ContentListSortButton');
             if(s_button){
                 clearInterval(interval5);
-                like_button(s_button); }}}
+                like_button(s_button, 0); }
+            else{
+                let slot_button=document.querySelector('.com-tv-SlotActionButtonsBlock');
+                if(slot_button){
+                    clearInterval(interval5);
+                    like_button(slot_button, 1); }}}}
 
 
-    function like_button(s_button){
+    function like_button(s_button, n){
         let l_c=
             '<button class="like_clone" style="color: transparent">'+
             '<svg viewBox="-4 -5 33 33">'+
@@ -1126,6 +1134,10 @@ function like(){
             '0 1l3 3a1 1 0 0 0 1-0v-2h11c1 0 1-0 1-1v-4c0-1-0-1-1-1s-1 0-1 1z" '+
             'fill="currentColor" fill-rule="evenodd"></path></svg>'+
             '</button>';
+
+        if(n==1){
+            l_c+=
+                '<style>.like_clone { position: fixed; top: 0; right: 15px; }</style>'; }
 
         s_button.insertAdjacentHTML('afterend', l_c);
 
