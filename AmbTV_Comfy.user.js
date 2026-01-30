@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.6
+// @version        7.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -24,10 +24,10 @@ if(!is_atv()){ // 通常の画面
     light_box(); }
 
 else{ // 配信リスト iframe内のみ
-    list_link_if();
     set_iframe();
     like();
-    quiet(); }
+    quiet();
+    list_link_if(); }
 
 
 function is_atv(){
@@ -977,46 +977,6 @@ function if_close(){
 
 
 
-function list_link_if(){
-    document.addEventListener('mouseup', function(event){
-        let elem=document.elementFromPoint(event.clientX, event.clientY);
-        let link_elem=elem.closest('.com-content-list-ContentListItem a');
-        if(link_elem){
-            let url=link_elem.getAttribute('href');
-            if(url){
-                window.parent.location.href=url; }}
-        else{
-            link_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item a');
-            if(link_elem){
-                let url=link_elem.getAttribute('href');
-                if(url){
-                    window.parent.location.href=url; }}
-            else{
-                let li_elem=elem.closest('.com-content-list-ContentListEpisodeItem');
-                if(li_elem){ // 再生中でリンクが無いリスト項目の場合
-                    let url=location.href;
-                    if(url.includes('&atv_if')){
-                        url=url.replace('&atv_if', ''); }
-                    else if(url.includes('?atv_if')){
-                        url=url.replace('?atv_if', ''); }
-                    window.parent.location.href=url; }}}
-    });
-
-
-    let mov_l=window.parent.document.querySelector('.mov_link');
-    if(mov_l){
-        mov_l.onclick=()=>{
-            let url=location.href;
-            if(url.includes('&atv_if')){
-                url=url.replace('&atv_if', ''); }
-            else if(url.includes('?atv_if')){
-                url=url.replace('?atv_if', ''); }
-            window.parent.location.href=url; }}
-
-} // list_link_if()
-
-
-
 function set_iframe(){
     let in_style=
         '<style class="in_style">'+
@@ -1029,63 +989,43 @@ function set_iframe(){
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'padding: 40px 0 0 8px; } '+
 
+        '[class$="Header__title"], [class$="SeriesTitle"] { padding: 16px 16px 20px; } '+
+
         '.com-o-Carousel__slide-list-inner { margin-left: 40px !important; } '+
         '.com-o-Carousel__arrow-button { width: 8%; } '+
         '.com-o-Carousel__gradient { width: 90vw; } '+
         '.com-content-list-SeasonTab__thumbnail-watch-icon-background { background: none; } '+
         '.com-content-list-SeasonTab__thumbnail-watch-icon { '+
         'background: #000; border-radius: 50%; } '+
+        '[class$="__group-tab-list-container"] { padding-top: 16px !important; } '+
+        '[class$="__sort-button"] { margin: 0; } '+
+        '[class$="SortButton__text"] { display: none; } '+
 
-        '.com-content-list-ContentListHeader__group-tab-list-container { '+
-        'padding-top: 16px !important; } '+
-        '.com-content-list-ContentListHeader__sort-button { margin: 0; } '+
-        '.com-content-list-ContentListSortButton__text, '+
-        '.com-contentlist-ContentlistSortButton__text { display: none; } '+
+        // 標準の配信リストのアイテム
+        '.com-contentlist-ContentlistContainer li>div, '+
+        '.com-content-list-ContentList li>div { padding: 8px; } '+
+        '.com-contentlist-ContentlistContainer li>div:has(.com-vod-VODLabel__text--dark-free), '+
+        '.com-content-list-ContentList li>div:has(.com-vod-VODLabel__text--dark-free) { '+
+        'background: #002e3a; } '+
 
-        '.com-contentlist-ContentlistEpisodeItem, '+ // 標準 新
-        '.com-content-list-ContentListEpisodeItem, '+ // 標準 旧
-        '.com-content-list-ContentListLiveEventItem, '+ // スポーツライブ
-        '.com-content-list-ContentListVideoSeriesEpisodeItem { '+ // ニュース
-        'overflow: hidden; padding: 8px; } '+
-        '.com-contentlist-ContentlistEpisodeItem .com-vod-VODLabel__text--dark-free, '+
-        '.com-content-list-ContentListItem .com-vod-VODLabel__text--dark-free { '+
-        'box-shadow: 0 0 0 600px #002e3a; } '+
-
-        '.com-content-list-ContentListEpisodeItem__watching-icon-container, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem__watching-icon-container, '+
-        '.com-content-list-ContentListLiveEventItem__watching-icon-container { '+
-        'display: none; } '+
-        '.com-content-list-ContentListEpisodeItem__title, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem__title, '+
-        '.com-content-list-ContentListSlotItem__link, '+
-        '.com-content-list-ContentListLiveEventItem__link { font-size: 16px; } '+
-        '.com-content-list-ContentListEpisodeItem-ContentListEpisodeItemOverview__supplement, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem-'+
-        'ContentListVideoSeriesEpisodeItemOverview__supplement, '+
-        '.com-content-list-ContentListSlotItem__date, '+
-        '.com-content-list-ContentListLiveEventItem__date, '+
-        '.com-content-list-ContentListEpisodeItem__description, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem__description, '+
-        '.com-content-list-ContentListSlotItem__description, '+
-        '.com-content-list-ContentListLiveEventItem__description { '+
-        'color: #ddd; position: relative; } '+
-        '.com-content-list-ContentListEpisodeItem-ContentListEpisodeItemOverview__view-count { '+
-        'display: none; } '+
-        '.com-vod_expiration_date-ExpiredDateText__text--info { color: #fff; } '+
-
-        '.com-content-list-ContentListEpisodeItem__thumbnail, '+
-        '.com-content-list-ContentListLiveEventItem__thumbnail, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem__thumbnail { margin-right: 8px; } '+
-        '.com-viewng-history-LegacyViewingHistoryProgressBar__shadow, '+
-        '.com-viewng_history-ViewingHistoryProgressBar__shadow { display: none; } '+
+        '[class$="__watching-icon-container"] { display: none; } '+
+        '[class$="Item__title"], [class$="__link"] { font-size: 16px; } '+
+        '[class$="__supplement"], [class$="__date"], [class$="__description"] { color: #ccc; } '+
+        '[class$="__view-count"] { display: none; } '+
+        '[class$="DateText__text--bold"] { color: #fff; } '+
+        '[class$="__thumbnail"] { margin: 0 8px 0 0; } '+
+        '[class$="HistoryProgressBar__shadow"] { display: none; } '+
         '.com-a-ProgressBar__bar { background-color: #8dc9ff; } '+
+        '[class$="__my-list-button"] { margin-left: 0; width: 24px; } '+
 
-        '.com-content-list-ContentListEpisodeItem__my-list-button, '+
-        '.com-content-list-ContentListVideoSeriesEpisodeItem__my-list-button, '+
-        '.com-content-list-ContentListSlotItem__my-list-button, '+
-        '.com-content-list-ContentListLiveEventItem__my-list-button { '+
-        'margin-left: 0; width: 24px; } '+
+        // スロットグループの配信リストのアイテム
+        '.com-my-list-MyListBaseItem__wrapper { margin: 0; padding: 8px; } '+
+        '.com-my-list-MyListBaseItem__details { margin: 0; } '+
+        '.com-my-list-SlotListItem__start-at { color: #fff; } '+
+        '.com-my-list-MyListBaseItem__wrapper:has(.com-vod-VODLabel__text--dark-free) { '+
+        'background: #002e3a; } '+
 
+        // マイリスト登録時のプルダウン表示パネル
         '.com-m-NotificationManager { width: unset; right: 60px; top: 15px; } '+
         '.com-application-NotificationToast { gap: 0; height: 40px; padding: 0 10px; } '+
         '.com-application-NotificationToast__button-wrapper, '+
@@ -1094,16 +1034,6 @@ function set_iframe(){
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
-
-        // マイリストスロットグループの配信リスト
-        '.com-my-list-MyListBaseItem { overflow: hidden; } '+
-        '.com-my-list-MyListBaseItem__wrapper { margin: 0 8px; } '+
-        '.com-my-list-MyListBaseItem__thumbnail { margin: 8px 0; } '+
-        '.com-my-list-MyListBaseItem__details { margin-left: 8px; overflow: unset; } '+
-        '.com-my-list-SlotListItem__title { font-size: 16px; } '+
-        '.com-my-list-SlotListItem__start-at { position: relative; color: #fff; } '+
-        '.com-my-list-SlotListItem__expiration .com-vod-VODLabel__text--dark-free { '+
-        'box-shadow: 0 0 0 600px #002e3a; } '+
         '</style>';
 
     document.body.insertAdjacentHTML('beforeend', in_style);
@@ -1241,6 +1171,41 @@ function like(){
     } // like_button()
 
 } // like()
+
+
+
+function list_link_if(){
+    document.addEventListener('mousedown', function(event){
+        event.preventDefault();
+        let elem=document.elementFromPoint(event.clientX, event.clientY);
+        let link_elem=elem.closest('li a');
+        if(link_elem){ // 通常にリンクが設定されているリスト項目
+            let url=link_elem.getAttribute('href');
+            if(url){
+                window.parent.location.href=url; }}
+        else{
+            let li_elem=elem.closest('.com-content-list-ContentListItem');
+            if(li_elem){ // iframeを開いた項目で、リンクが設定されていないリスト項目
+                let url=location.href;
+                if(url.includes('&atv_if')){
+                    url=url.replace('&atv_if', ''); }
+                else if(url.includes('?atv_if')){
+                    url=url.replace('?atv_if', ''); }
+                window.parent.location.href=url; }}
+    });
+
+
+    let mov_l=window.parent.document.querySelector('.mov_link');
+    if(mov_l){
+        mov_l.onclick=()=>{
+            let url=location.href;
+            if(url.includes('&atv_if')){
+                url=url.replace('&atv_if', ''); }
+            else if(url.includes('?atv_if')){
+                url=url.replace('?atv_if', ''); }
+            window.parent.location.href=url; }}
+
+} // list_link_if()
 
 
 
