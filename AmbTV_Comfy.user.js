@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.7
+// @version        7.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -575,8 +575,9 @@ function free_only(){
         let sw=
             '<div class="sw_free">Free Only'+
             '<style>.sw_free { font: normal 16px/22px Meiryo; height: 22px; padding: 0 6px; '+
-            'margin: 9px 12px 0 0; border: 1px solid #aaa; border-radius: 4px; color: #fff; '+
+            'margin: 0 12px 0 0; border: 1px solid #aaa; border-radius: 4px; color: #fff; '+
             'background: #005167; cursor: pointer; } '+
+            '.com-content-list-ContentListHeader__sort-button { align-items: center; } '+
             '.com-content-list-ContentListSortButton__icon-wrapper, '+
             '.com-contentlist-ContentlistSortButton__icon-wrapper { '+
             'border: 1px solid #aaa; border-radius: 4px; } '+
@@ -984,7 +985,7 @@ function set_iframe(){
         '.com-slot-group-SlotList, '+
         '.com-contentlist-ContentlistContainer, '+
         '.com-content-list-ContentList { '+
-        'position: fixed; top: 0; left: 0; z-index: 31; width: 476px; '+
+        'position: fixed; top: 0; left: 0; z-index: 32; width: 476px; '+
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'padding: 40px 0 0 8px; } '+
@@ -1025,12 +1026,7 @@ function set_iframe(){
         '.com-my-list-MyListBaseItem__wrapper:has(.com-vod-VODLabel__text--dark-free) { '+
         'background: #002e3a; } '+
 
-        // マイリスト登録時のプルダウン表示パネル
-        '.com-m-NotificationManager { width: unset; right: 60px; top: 15px; } '+
-        '.com-application-NotificationToast { gap: 0; height: 40px; padding: 0 10px; } '+
-        '.com-application-NotificationToast__button-wrapper, '+
-        '.com-application-NotificationToast__close-button { display: none; } '+
-        '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: none; } '+
+        // マイリストボタン（配信リスト）
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
@@ -1117,6 +1113,7 @@ function like(){
                     }, 20);
                     setTimeout(()=>{
                         clone_disp(like_clone);
+                        c_button.click();
                     }, 200); }}
             else{ // 書庫トップ画面（小パネルがないシリーズ登録の操作）
                 clone_disp(like_clone);
@@ -1184,7 +1181,9 @@ function list_link_if(){
             if(url){
                 window.parent.location.href=url; }}
         else{
-            let li_elem=elem.closest('.com-content-list-ContentListItem');
+            let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
+            if(!li_elem){
+                li_elem=elem.closest('.com-content-list-ContentListItem'); } // 🔵 2種のクラス名に対応
             if(li_elem){ // iframeを開いた項目で、リンクが設定されていないリスト項目
                 let url=location.href;
                 if(url.includes('&atv_if')){
