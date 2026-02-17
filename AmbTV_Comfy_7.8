@@ -720,7 +720,9 @@ function disp_list(){ //「配信リスト表示」
             else if(!location.pathname.includes('/timetable')){
                 if(!location.pathname.includes('/video/title/')){
                     if(event.ctrlKey){ // 動画再生中でリンクが無いリスト項目から配信リストを表示する
-                        let li_elem=elem.closest('.com-content-list-ContentListEpisodeItem');
+                        let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
+                        if(!li_elem){ // 🔵 2種の動画ページのクラス名に対応　通常動画・ニュース
+                            li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
                         if(li_elem){
                             let url=location.href;
                             if(url.includes('?')){
@@ -1182,8 +1184,8 @@ function list_link_if(){
                 window.parent.location.href=url; }}
         else{
             let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
-            if(!li_elem){
-                li_elem=elem.closest('.com-content-list-ContentListItem'); } // 🔵 2種のクラス名に対応
+            if(!li_elem){ // 🔵 2種の動画ページのクラス名に対応　通常動画・ニュース
+                li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
             if(li_elem){ // iframeを開いた項目で、リンクが設定されていないリスト項目
                 let url=location.href;
                 if(url.includes('&atv_if')){
