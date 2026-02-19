@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.8
+// @version        7.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -25,8 +25,9 @@ if(!is_atv()){ // 通常の画面
 
 else{ // 配信リスト iframe内のみ
     set_iframe();
+    set_if_env();
+    set_order();
     like();
-    quiet();
     list_link_if(); }
 
 
@@ -54,20 +55,19 @@ function player_env(){
             set_player(player); }}
 
 
-
     let retry1=0;
-    let interval1=setInterval(wait_target1, 100);
+    let interval1=setInterval(wait_target1, 200);
     function wait_target1(){
         retry1++;
-        if(retry1>20){ // リトライ制限 2secまで
+        if(retry1>10){ // リトライ制限 2secまで
             clearInterval(interval1); }
 
-        let s_button=document.querySelectorAll( // 🔵 2種のクラス名に対応
-            '.com-content-list-ContentListSortButton, .com-contentlist-ContentlistSortButton')[0];
+        let s_button=document.querySelector('button[class*="SortButton"]'); // 🔵2種クラス名
         if(s_button){
             clearInterval(interval1);
-            s_button.click(); // 配信リストの降順化
-            free_only(); }}
+            if(s_button.querySelector('div[class*="order-type-normal"]')){
+                s_button.click(); } // 配信リストの降順化
+            sort_and_free(); }}
 
 
 
@@ -558,20 +558,15 @@ function player_env(){
                         return 404; }}}
 
         } // send_page()
-
     } // trim_play()
 
 } // player_env()
 
 
 
-function free_only(){
-    let free=1;
-
-    let cs_button=document.querySelectorAll( // 🔵 2種のクラス名に対応
-        '.com-content-list-ContentListHeader__sort-button, '+
-        '.com-contentlist-ContentlistContainer__sort-button')[0];
-    if(cs_button){
+function sort_and_free(){
+    let s_button=document.querySelector('button[class*="SortButton"]'); // 🔵2種クラス名
+    if(s_button){
         let sw=
             '<div class="sw_free">Free Only'+
             '<style>.sw_free { font: normal 16px/22px Meiryo; height: 22px; padding: 0 6px; '+
@@ -585,7 +580,8 @@ function free_only(){
             '.com-contentlist-ContentlistSortButton__icon { height: 20px; width: 20px; } '+
             '</style></div>';
         if(!document.querySelector('.sw_free')){
-            cs_button.insertAdjacentHTML('afterbegin', sw); }}
+            s_button.insertAdjacentHTML('beforebegin', sw); }}
+
 
     let swf=document.querySelector('.sw_free');
     if(swf){
@@ -597,43 +593,33 @@ function free_only(){
 
 
     function clear_all(n){
-        list_view(0);
+        let ul=document.querySelectorAll( // 🔵2種クラス名
+            '.com-content-list-ContentListItemList, '+
+            '.com-contentlist-ItemListForContentlistContent')[0];
+        if(ul){
+            ul.style.minHeight='140px';
+            ul.style.scrollbarWidth='none';
+            ul.style.height='300px';
+            ul.style.overflowY='scroll';
+            ul.scrollTop=ul.scrollHeight;
 
-        let retry6=0;
-        let interval6=setInterval(wait_target6, 200);
-        function wait_target6(){
-            retry6++;
-            if(retry6>3){ // リトライ制限 .6secまで
-                list_view(1);
-                clearInterval(interval6); }
-            let more=document.querySelector('.com-content-list-ContentList__see-more-button');
-            if(more){
-                more.click(); }
-            else{
-                setTimeout(()=>{
-                    if(n==0){
-                        clear(); }
-                    else{
-                        reset_clear(); }
-                }, 300); }}
-
-
-        function list_view(n){
-            let ul=document.querySelectorAll( // 🔵2種のクラス名に対応
-                '.com-content-list-ContentListItemList, '+
-                '.com-contentlist-ItemListForContentlistContent')[0];
-            if(ul){
-                ul.style.minHeight='141px';
+            setTimeout(()=>{
                 if(n==0){
-                    ul.style.display='none'; }
+                    clear(); }
                 else{
-                    ul.style.display='block'; }}}
+                    reset_clear(); }
+            }, 200); }
+
+        setTimeout(()=>{
+            ul.style.height='unset';
+            ul.style.overflowY='unset';
+        }, 200);
 
     } // clear_all()
 
 
     function clear(){
-        let cli=document.querySelectorAll( // 🔵 2種のクラス名に対応
+        let cli=document.querySelectorAll( // 🔵2種クラス名
             '.com-content-list-ContentListItem, .com-contentlist-ItemListForContentlistContent__item');
         for(let k=0; k<cli.length; k++){
             let prem=cli[k].querySelector('.com-vod-VODLabel__text--dark-premium');
@@ -641,12 +627,12 @@ function free_only(){
                 cli[k].style.display='none'; }}}
 
     function reset_clear(){
-        let cli=document.querySelectorAll( // 🔵 2種のクラス名に対応
+        let cli=document.querySelectorAll( // 🔵2種クラス名
             '.com-content-list-ContentListItem, .com-contentlist-ItemListForContentlistContent__item');
         for(let k=0; k<cli.length; k++){
             cli[k].style.display='list-item'; }}
 
-} // free_only()
+} // sort_and_free()
 
 
 
@@ -721,7 +707,7 @@ function disp_list(){ //「配信リスト表示」
                 if(!location.pathname.includes('/video/title/')){
                     if(event.ctrlKey){ // 動画再生中でリンクが無いリスト項目から配信リストを表示する
                         let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
-                        if(!li_elem){ // 🔵 2種の動画ページのクラス名に対応　通常動画・ニュース
+                        if(!li_elem){ // 🔵2種クラス名　通常動画・ニュース
                             li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
                         if(li_elem){
                             let url=location.href;
@@ -771,7 +757,6 @@ function set_if(target){
             if(url.includes('/slots/')){
                 url=url+'?atv_if';
                 creat_iframe(url); }}}
-
 
 
     function on_air(target){
@@ -835,6 +820,21 @@ function set_if(target){
             Originals[k].style.outline=''; }}
 
 } //set_if()
+
+
+
+function if_close(){
+    let if_wrap=document.querySelector('#if_wrap');
+    if(if_wrap){
+        if_wrap.remove();
+
+        setTimeout(()=>{
+            let cards=document.querySelectorAll('.com-shared-feature-area-CardItem');
+            for(let k=0; k<cards.length; k++){
+                let style=cards[k].getAttribute('style');
+                if(style && style.includes('2px')){
+                    scroll_center(cards[k]); }}
+        }, 800); }}
 
 
 
@@ -923,38 +923,6 @@ function creat_iframe(url){
     document.body.insertAdjacentHTML('beforeend', if_elem); // iframe生成
 
 
-    let if_n=document.querySelector('#notify');
-    if_n.onload=function(){
-        let retry3=0;
-        let interval3=setInterval(wait_target3, 20);
-        function wait_target3(){
-            retry3++;
-            if(retry3>100){ // リトライ制限 2secまで
-                clearInterval(interval3); }
-            let contentlist_item=
-                if_n.contentWindow.document.querySelectorAll( // 🔵 2種のクラス名に対応
-                    '.com-content-list-ContentListItemList, .com-contentlist-ItemListForContentlistContent')[0];
-            if(contentlist_item){
-                clearInterval(interval3);
-                setTimeout(()=>{
-                    let s_button=if_n.contentWindow.document.querySelectorAll( // 🔵 2種のクラス名に対応
-                        '.com-content-list-ContentListSortButton, .com-contentlist-ContentlistSortButton')[0];
-                    s_button.click(); // リストの降順化
-                }, 800); }}
-
-
-        setTimeout(()=>{ // 配信リストが無い場合に標準のマイリストボタンを非表示にする
-            let ContentList=
-                if_n.contentWindow.document.querySelector('.com-content-list-ContentList');
-            if(!ContentList){
-                let mlb_reset=
-                    '<style>'+
-                    '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: unset; } '+
-                    '</style>';
-                if_n.contentWindow.document.body.insertAdjacentHTML('beforeend', mlb_reset);
-            }}, 2000); // 2sec後
-    } // if_n.onload
-
 
     let close_button=document.querySelector('.if_close');
     if(close_button){
@@ -965,29 +933,24 @@ function creat_iframe(url){
 
 
 
-function if_close(){
-    let if_wrap=document.querySelector('#if_wrap');
-    if(if_wrap){
-        if_wrap.remove();
-
-        setTimeout(()=>{
-            let cards=document.querySelectorAll('.com-shared-feature-area-CardItem');
-            for(let k=0; k<cards.length; k++){
-                let style=cards[k].getAttribute('style');
-                if(style && style.includes('2px')){
-                    scroll_center(cards[k]); }}
-        }, 800); }}
-
-
-
 function set_iframe(){
     let in_style=
         '<style class="in_style">'+
+
+        // iframeの初期表示を改善
+        'body { padding-top: 100vh; } '+
+        '.com-application-Header__left { margin-top: -100px; } '+
+        '.com-vod-VODRecommendedContentsContainerView__details { '+
+        'margin-bottom: 100vh; } '+
+        '.com-vod-VODMiniPlayerWrapper__player--mini, '+
+        '.com-vod-VODMiniPlayerWrapper__player--bg-mini { top: 100vh; display: none; } '+
+
+        // 配信リストの配置
         '.com-vod-VODRecommendedContentsContainerView__player-and-details, '+
         '.com-slot-group-SlotList, '+
         '.com-contentlist-ContentlistContainer, '+
         '.com-content-list-ContentList { '+
-        'position: fixed; top: 0; left: 0; z-index: 32; width: 476px; '+
+        'position: fixed; top: 0px; left: 0; z-index: 32; width: 476px; '+
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'padding: 40px 0 0 8px; } '+
@@ -1034,21 +997,32 @@ function set_iframe(){
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
         '</style>';
 
-    document.body.insertAdjacentHTML('beforeend', in_style);
+    document.documentElement.insertAdjacentHTML('beforeend', in_style);
 
 } // set_iframe()
 
 
 
-function quiet(){
+function set_if_env(){
     let retry4=0;
-    let interval4=setInterval(wait4, 40);
-    function wait4(){
-        mu();
+    let interval4=setInterval(wait_target4, 20);
+    function wait_target4(){
         retry4++;
-        if(retry4>50){ // リトライ制限 2secまで
-            clearInterval(interval4); }}
+        if(retry4>200){ // リトライ制限 4secまで
+            clearInterval(interval4); }
+        let ad_container=document.querySelector('#videoAdContainer > div');
+        if(ad_container){
+            clearInterval(interval4);
+            ad_container.remove(); }} // AD Block
 
+
+    let retry5=0;
+    let interval5=setInterval(wait_target5, 40);
+    function wait_target5(){
+        mu();
+        retry5++;
+        if(retry5>50){ // リトライ制限 2secまで
+            clearInterval(interval5); }}
 
     function mu(){
         let video_el=document.querySelector('video');
@@ -1057,25 +1031,66 @@ function quiet(){
             video_el.addEventListener('timeupdate', function(){
                 video_el.pause(); }); }}
 
-} // quiet()
+
+    setTimeout(()=>{ // 配信リストが無い場合に標準のマイリストボタンを非表示にする
+        let ContentList=document.querySelector('.com-content-list-ContentList');
+        if(!ContentList){
+            let mlb_reset=
+                '<style>'+
+                '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: unset; } '+
+                '</style>';
+            document.body.insertAdjacentHTML('beforeend', mlb_reset);
+        }}, 2000); // 2sec後
+
+} // set_if_env()
+
+
+
+function set_order(){
+    let retry6=0;
+    let interval6=setInterval(wait_target6, 200);
+    function wait_target6(){
+        retry6++;
+        if(retry6>25){ // リトライ制限 5secまで
+            clearInterval(interval6); }
+        let ul=document.querySelectorAll( // 🔵2種クラス名
+            '.com-content-list-ContentListItemList, '+
+            '.com-contentlist-ItemListForContentlistContent')[0];
+        if(ul){
+            let retry7=0;
+            let interval7=setInterval(wait_target7, 200);
+            function wait_target7(){
+                d_order();
+                retry7++;
+                if(retry7>10){ // リトライ制限 2secまで
+                    clearInterval(interval7); }}}}
+
+
+    function d_order(){
+        let s_button=
+            document.querySelector('button[class$="SortButton"]'); // 🔵2種クラス名
+        if(s_button){
+            if(s_button.querySelector('div[class*="order-type-normal"]')){
+                s_button.click(); }}} // 配信リストの降順化
+
+} // set_order()
 
 
 
 function like(){
-    let retry5=0;
-    let interval5=setInterval(wait_target5, 20);
-    function wait_target5(){
-        retry5++;
-        if(retry5>100){ // リトライ制限 2secまで
-            let s_button=document.querySelectorAll( // 🔵 2種のクラス名に対応
-                '.com-content-list-ContentListSortButton, .com-contentlist-ContentlistSortButton')[0];
+    let retry8=0;
+    let interval8=setInterval(wait_target8, 200);
+    function wait_target8(){
+        retry8++;
+        if(retry8>10){ // リトライ制限 2secまで
+            let s_button=document.querySelector('button[class*="SortButton"]'); // 🔵2種クラス名
             if(s_button){
-                clearInterval(interval5);
+                clearInterval(interval8);
                 like_button(s_button, 0); }
             else{ // 🔵 配信リストが無い未来のスロットに対応
                 let slot_button=document.querySelector('.com-tv-SlotActionButtonsBlock');
                 if(slot_button){
-                    clearInterval(interval5);
+                    clearInterval(interval8);
                     like_button(slot_button, 1); }}}}
 
 
@@ -1094,6 +1109,7 @@ function like(){
                 '<style>.like_clone { position: fixed; top: 0; right: 15px; }</style>'; }
 
         s_button.insertAdjacentHTML('afterend', l_c);
+
 
         let like_clone=document.querySelector('.like_clone');
         let c_button=document.querySelector('.com-shared-my-list-MyListBaseCircleButton__button');
@@ -1164,8 +1180,7 @@ function like(){
 
         } // clone_disp()
 
-
-        free_only();
+        sort_and_free();
 
     } // like_button()
 
@@ -1184,7 +1199,7 @@ function list_link_if(){
                 window.parent.location.href=url; }}
         else{
             let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
-            if(!li_elem){ // 🔵 2種の動画ページのクラス名に対応　通常動画・ニュース
+            if(!li_elem){ // 🔵2種クラス名　通常動画・ニュース
                 li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
             if(li_elem){ // iframeを開いた項目で、リンクが設定されていないリスト項目
                 let url=location.href;
@@ -1239,8 +1254,6 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
             else if(elem.closest('.com-timetable-SideSlotDetailThumbnail')){
                 card_elem=elem.closest('.com-timetable-SideSlotDetailThumbnail');
                 thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
-
-
 
             if(thum_elem){
                 set_link(link_elem);
