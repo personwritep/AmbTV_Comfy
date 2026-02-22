@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        7.9
+// @version        8.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -136,10 +136,9 @@ function player_env(){
             '.com-vod-VODScreen__video-control-bg { '+
             'height: 60px !important; background: rgba(0,0,0,0.5) !important; } '+
 
-            '.c-vod-RecommendOnPlayer__recommend-content-bg { background: none; } '+
-            '.com-vod-VODPlayerNextContentRecommendBase__inner { '+
+            '[class*="NextContentCard__recommend-content-bg"] { background: none; } '+
+            '.com-pages-episode-NextContentCard__inner { '+
             'padding: 10px; background: rgb(0 0 0 / 50%); } '+
-            '.com-video-EpisodePlayerSectionExternalContent { display: none; }'+ // 🟠 見放題AD
             '</style>';
 
         if(!player.querySelector('.atv_style')){
@@ -241,14 +240,6 @@ function player_env(){
 
 
     function player_tool(){
-
-        function sw_rate(){
-            let rate=document.querySelector('.com-vod-VideoControlPlaybackRate');
-            if(rate){
-                let rate_sw=rate.closest('.com-vod-VODScreen__button');
-                if(rate_sw){
-                    return rate_sw; }}}
-
         let cont_r=document.querySelector('.com-vod-VideoControlBar__right');
         if(cont_r){
             let help=
@@ -292,11 +283,13 @@ function player_env(){
                 '<style>.atv_icon { width: 19px; height: 19px; } '+
                 ':fullscreen .atv_sw { display: none; }</style></div>';
 
-            let p_rate=sw_rate();
-            if(p_rate){
-                if(!document.querySelector('.atv_sw')){
-                    p_rate.insertAdjacentHTML('afterend', sw); }}
 
+            let rate=document.querySelector('.com-vod-VideoControlPlaybackRate');
+            if(rate){
+                let p_rate=rate.closest('.com-vod-VODScreen__button');
+                if(p_rate){
+                    if(!document.querySelector('.atv_sw')){
+                        p_rate.insertAdjacentHTML('afterend', sw); }}}
 
             let atv_sw=document.querySelector('.atv_sw');
             let atv_tp=document.querySelector('.atv_tp');
@@ -520,10 +513,10 @@ function player_env(){
 
 
         document.addEventListener('keydown', function(event){
-            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のコンテンツへ　🔵
-                send_page(1); }
             if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl + ⇦」 前のコンテンツへ　🔵
-                send_page(0); }});
+                send_page(0); }
+            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のコンテンツへ　🔵
+                send_page(1); }});
 
 
         function send_page(n){
@@ -532,10 +525,10 @@ function player_env(){
             let index=now.lastIndexOf('p');
             let pre_num=now.substring(0, index+1);
             let num;
-            if(n==1){
-                num=now.substring(index+1)/1+1; }
-            else if(n==0){
+            if(n==0){
                 num=now.substring(index+1)/1-1; }
+            else if(n==1){
+                num=now.substring(index+1)/1+1; }
 
             let next_p=pre_num + num.toString() +'?next=true'; // 次の動画の最初から
             if(!check(next_p)){
@@ -622,9 +615,10 @@ function sort_and_free(){
         let cli=document.querySelectorAll( // 🔵2種クラス名
             '.com-content-list-ContentListItem, .com-contentlist-ItemListForContentlistContent__item');
         for(let k=0; k<cli.length; k++){
-            let prem=cli[k].querySelector('.com-vod-VODLabel__text--dark-premium');
-            if(prem){
+            let prem=cli[k].querySelector('.com-vod-VODLabel__text--dark-free');
+            if(!prem){
                 cli[k].style.display='none'; }}}
+
 
     function reset_clear(){
         let cli=document.querySelectorAll( // 🔵2種クラス名
@@ -995,6 +989,9 @@ function set_iframe(){
         '.like_clone { height: 21px; width: 21px; margin: 10px 12px 10px 4px; '+
         'border-radius: 20px; background: #ffcc00; } '+
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
+
+        // マイリスト登録時のプルダウン表示パネル
+        '.com-m-NotificationManager { display: none; } '+
         '</style>';
 
     document.documentElement.insertAdjacentHTML('beforeend', in_style);
@@ -1194,9 +1191,10 @@ function list_link_if(){
         let elem=document.elementFromPoint(event.clientX, event.clientY);
         let link_elem=elem.closest('li a');
         if(link_elem){ // 通常にリンクが設定されているリスト項目
-            let url=link_elem.getAttribute('href');
-            if(url){
-                window.parent.location.href=url; }}
+            if(!link_elem.closest('.com-content-list-GroupTabList__list-item')){ // タブリストを除外
+                let url=link_elem.getAttribute('href');
+                if(url){
+                    window.parent.location.href=url; }}}
         else{
             let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
             if(!li_elem){ // 🔵2種クラス名　通常動画・ニュース
