@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.0
+// @version        8.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -180,12 +180,12 @@ function player_env(){
                 document.querySelector('.c-vod-EpisodePlayerContainer__appeal-plan-overlay');
             if(appeal_plan){
                 set_subw(0); } // プレミアムAD表示時に 🟦 通常表示にする
-        }, 100);
+        }, 800);
 
 
         setTimeout(()=>{
             trim_play(player);
-        }, 800);
+        }, 1000);
 
 
         setTimeout(()=>{
@@ -330,7 +330,7 @@ function player_env(){
 
         let video=document.querySelector('.com-a-Video__video-element');
         if(video){
-            video.volume=1; } // ミュートをリセット
+            video.volume=1; } // ミュートをリセット 🟨
 
 
         set_mode();
@@ -532,9 +532,38 @@ function player_env(){
 
             let next_p=pre_num + num.toString() +'?next=true'; // 次の動画の最初から
             if(!check(next_p)){
-                location.href=next_p; }
+                if(n==0){
+                    show_no(0);
+                    location.href=next_p; }
+                else if(n==1){
+                    show_no(1);
+                    location.href=next_p; }}
             else{
-                alert("⛔ 次のコンテンツが見つかりません"); }
+                show_no(2); }
+
+
+            function show_no(n){
+                let show;
+                if(n==0){
+                    show='<dialog class="s_no">◀ コンテンツを移動します'; }
+                else if(n==1){
+                    show='<dialog class="s_no">コンテンツを移動します ▶'; }
+                else if(n==2){
+                    show='<dialog class="s_no">⛔ 次のコンテンツが見つかりません'; }
+                show+=
+                    '<style>.s_no { position: fixed; top: 20px; left: 240px; padding: 3px 6px 1px; '+
+                    'outline: none; border: 1px solid #000; border-radius: 4px; background: #fff; } '+
+                    '.s_no::backdrop { background: transparent; }'
+                '</style></dialog>';
+                if(!document.querySelector('.s_no')){
+                    document.body.insertAdjacentHTML('beforeend', show); }
+
+                let s_no=document.querySelector('.s_no');
+                if(s_no){
+                    s_no.showModal();
+                    setTimeout(()=>{
+                        s_no.remove();
+                    }, 1000); }} // show_no()
 
 
             function check(target_url){
@@ -1024,7 +1053,7 @@ function set_if_env(){
     function mu(){
         let video_el=document.querySelector('video');
         if(video_el){
-            video_el.muted=true;
+            video_el.muted=true; // 🟨
             video_el.addEventListener('timeupdate', function(){
                 video_el.pause(); }); }}
 
