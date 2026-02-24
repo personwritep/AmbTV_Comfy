@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.1
+// @version        8.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -291,49 +291,13 @@ function player_env(){
                     if(!document.querySelector('.atv_sw')){
                         p_rate.insertAdjacentHTML('afterend', sw); }}}
 
-            let atv_sw=document.querySelector('.atv_sw');
-            let atv_tp=document.querySelector('.atv_tp');
-            if(atv_sw && atv_tp){
-                if(sessionStorage.getItem('AmbTV_S')=='1'){
-                    set_subw(1); // 🟦 サブウインドウ表示
-                    atv_tp.textContent='デフォルト表示'; }
-                else{
-                    set_subw(0); // 🟦 通常表示
-                    atv_tp.textContent='サブウインドウ表示'; }
-
-                atv_sw.onclick=function(e){
-                    e.preventDefault();
-                    if(sessionStorage.getItem('AmbTV_S')=='1'){
-                        set_subw(0); // 🟦 通常表示
-                        atv_tp.textContent='サブウインドウ表示'; }
-                    else{
-                        set_subw(1); // 🟦 サブウインドウ表示
-                        atv_tp.textContent='デフォルト表示'; }}
+        } // if(cont_r)
 
 
-                let buttons=cont_r.querySelectorAll('.com-vod-VODScreen__button');
-                let full_sw=buttons[buttons.length-1];
-                if(full_sw){
-                    let ues=full_sw.querySelector('use');
-                    if(ues){
-                        let monitor_sw=new MutationObserver(sw_cont);
-                        monitor_sw.observe(ues, { attributes: true });
-                        function sw_cont(){
-                            setTimeout(()=>{
-                                if(sessionStorage.getItem('AmbTV_S')=='1'){
-                                    set_subw(0); // 🟦 通常表示
-                                    atv_tp.textContent='サブウインドウ表示'; }
-                            }, 100); }}}
-
-            }} // if(cont_r)
-
-
-        let video=document.querySelector('.com-a-Video__video-element');
-        if(video){
-            video.volume=1; } // ミュートをリセット 🟨
-
-
-        set_mode();
+        set_mode_button();
+        set_mode_key();
+        reset_mute();
+        full_sub_cont(cont_r);
         ex_view();
         end_roll();
 
@@ -341,7 +305,31 @@ function player_env(){
 
 
 
-    function set_mode(){
+    function set_mode_button(){
+        let atv_sw=document.querySelector('.atv_sw');
+        let atv_tp=document.querySelector('.atv_tp');
+        if(atv_sw && atv_tp){
+            if(sessionStorage.getItem('AmbTV_S')=='1'){
+                set_subw(1); // 🟦 サブウインドウ表示
+                atv_tp.textContent='デフォルト表示'; }
+            else{
+                set_subw(0); // 🟦 通常表示
+                atv_tp.textContent='サブウインドウ表示'; }
+
+            atv_sw.onclick=function(e){
+                e.preventDefault();
+                if(sessionStorage.getItem('AmbTV_S')=='1'){
+                    set_subw(0); // 🟦 通常表示
+                    atv_tp.textContent='サブウインドウ表示'; }
+                else{
+                    set_subw(1); // 🟦 サブウインドウ表示
+                    atv_tp.textContent='デフォルト表示'; }}}
+
+    } // set_mode_button()
+
+
+
+    function set_mode_key(){
         document.addEventListener('keydown', function(event){
             if(event.keyCode==27){ //「ESC」キー
                 set_subw(0); // 🟦 通常表示
@@ -357,7 +345,48 @@ function player_env(){
                     hide_cont(0); }} // 🟩 コントロール表示
         });
 
-    } // set_mode()
+    } // set_mode_key()
+
+
+
+    function reset_mute(){
+        let video=document.querySelector('.com-a-Video__video-element');
+        if(video){
+            video.volume=localStorage.getItem('AmbTV_V'); // 再生ボリュームをリセット 🟨
+
+            video.addEventListener('volumechange', ()=>{
+                let setVolume=Math.round(video.volume*10)/10
+                localStorage.setItem('AmbTV_V', setVolume); }); }
+
+        /*
+        let v_button=document.querySelector('.com-playback-Volume__icon-button');
+        if(v_button){
+            if(v_button.ariaLabel=='音声をオンにする'){ // 再生開始時のミュートをリセット 🟨
+                v_button.click(); }}
+*/
+
+    } // reset_mute()
+
+
+
+    function full_sub_cont(cont_r){ // フルスクリーン表示でサブウインド表示をリセット
+        if(cont_r){
+            let atv_tp=document.querySelector('.atv_tp');
+            let buttons=cont_r.querySelectorAll('.com-vod-VODScreen__button');
+            let full_sw=buttons[buttons.length-1];
+            if(full_sw){
+                let ues=full_sw.querySelector('use');
+                if(ues){
+                    let monitor_sw=new MutationObserver(sw_cont);
+                    monitor_sw.observe(ues, { attributes: true });
+                    function sw_cont(){
+                        setTimeout(()=>{
+                            if(sessionStorage.getItem('AmbTV_S')=='1'){
+                                set_subw(0); // 🟦 通常表示
+                                atv_tp.textContent='サブウインドウ表示'; }
+                        }, 100); }}}}
+
+    } // set_fullscreen_button(cont_r)
 
 
 
@@ -495,18 +524,48 @@ function player_env(){
         let video_elem=player.querySelector('.com-a-Video__video-element');
         if(video_elem){
             document.onkeydown=function(event){
-                if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ　🔵
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    video_elem.currentTime -=2;
-                    if(video_elem.paused==false){
-                        video_elem.play(); }}
-                if(event.keyCode=='38'){ //「⇧」キー 2sec後へジャンプ　🔵
-                    event.preventDefault();
-                    event.stopImmediatePropagation();
-                    video_elem.currentTime +=2;
-                    if(video_elem.paused==false){
-                        video_elem.play(); }}}
+                if(!event.shiftKey){
+                    if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ　🔵
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        video_elem.currentTime -=2;
+                        if(video_elem.paused==false){
+                            video_elem.play(); }}
+                    if(event.keyCode=='38'){ //「⇧」キー 2sec後へジャンプ　🔵
+                        event.preventDefault();
+                        event.stopImmediatePropagation();
+                        video_elem.currentTime +=2;
+                        if(video_elem.paused==false){
+                            video_elem.play(); }}}
+                else{
+                    let slider=document.querySelector('.com-playback-Volume__slider-container');
+                    if(slider){
+                        slider.style.opacity='1';
+                        slider.style.visibility='visible'; }
+
+                    if(event.keyCode=='40'){ //「⇩」キー Vol Down　🟨
+                        vol_con(0); }
+                    if(event.keyCode=='38'){ //「⇧」キー Vol Up　🟨
+                        vol_con(1); }}}
+
+
+            document.onkeyup=function(event){
+                let slider=document.querySelector('.com-playback-Volume__slider-container');
+                if(slider){
+                    if(!event.shiftKey){
+                        slider.style.opacity='0';
+                        slider.style.visibility='hidden'; }}}
+
+
+            function vol_con(n){
+                let video=document.querySelector('.com-a-Video__video-element'); // 🟨
+                if(video){
+                    if(n==0){
+                        if(video.volume>=0.1){
+                            video.volume -=0.1 }}
+                    if(n==1){
+                        if(video.volume<=0.9){
+                            video.volume +=0.1 }}}}
 
         } // if(video_elem)
 
