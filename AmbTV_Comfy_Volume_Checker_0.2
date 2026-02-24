@@ -42,19 +42,20 @@ function player_env(){
         let video=document.querySelector('.com-a-Video__video-element');
         if(logo && video){
             let vol=video.volume;
-            vol_disp(logo, vol);
+            let MVolume=Math.round(vol*10)/10
+            vol_disp(logo, MVolume);
 
-            if(vol!='0.5'){
-                alert("🔴🔴 ボリューム値は 0.5 以外です 🔴🔴"); }
+            if(MVolume!='0.8'){
+                alert("🔴🔴 ボリューム値は 0.8 以外です 🔴🔴"); }
 
 
             video.addEventListener('volumechange', ()=>{
                 setTimeout(()=>{
-                    let current_vol=video.volume;
+                    let current_vol=Math.round(video.volume*10)/10;
                     vol_disp(logo, current_vol);
 
-                    if(current_vol!='0.5'){
-                        alert("🔴🔴 ボリューム値は 0.5 以外に変更されました 🔴🔴"); }
+                    if(current_vol!='0.8'){
+                        alert("🔴🔴 ボリューム値は 0.8 以外に変更されました 🔴🔴"); }
                 }, 200); }); }
         else{
             clear_disp(); }
