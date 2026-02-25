@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy Volume Checker
 // @namespace        http://tampermonkey.net/
-// @version        0.3
+// @version        0.4
 // @description        AbemaTV TEST ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -26,40 +26,34 @@ function player_env(){
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0);
             clear_disp(); }
-        let player=document.querySelector('.c-vod-EpisodePlayerContainer-wrapper'); // player
-        if(!player){
-            player=document.querySelector('.c-tv-TimeshiftPlayerContainerView'); } // slots playrer
-        if(player){
+        let video=document.querySelector('.com-a-Video__video-element'); // video
+        if(video){
             clearInterval(interval0);
             setTimeout(()=>{
-                check_player();
+                check_player(video);
             }, 600); }}
 
 
 
-    function check_player(){
-        let video=document.querySelector('.com-a-Video__video-element');
-        if(video){
-            let vol=video.volume;
-            let MVolume=Math.round(vol*10)/10
+    function check_player(video){
+        let vol=video.volume;
+        let MVolume=Math.round(vol*10)/10
 
-            if(MVolume!='0.8'){
-                vol_disp(1, MVolume); }
-            else{
-                vol_disp(0, MVolume); }
-
-
-            video.addEventListener('volumechange', ()=>{
-                setTimeout(()=>{
-                    let current_vol=Math.round(video.volume*10)/10;
-
-                    if(current_vol!='0.8'){
-                        vol_disp(1, current_vol); }
-                    else{
-                        vol_disp(0, current_vol); }
-                }, 200); }); }
+        if(MVolume!='0.8'){
+            vol_disp(1, MVolume); }
         else{
-            clear_disp(); }
+            vol_disp(0, MVolume); }
+
+
+        video.addEventListener('volumechange', ()=>{
+            setTimeout(()=>{
+                let current_vol=Math.round(video.volume*10)/10;
+
+                if(current_vol!='0.8'){
+                    vol_disp(1, current_vol); }
+                else{
+                    vol_disp(0, current_vol); }
+            }, 200); });
 
     } // check_player()
 
