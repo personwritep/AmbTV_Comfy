@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy Volume Checker
 // @namespace        http://tampermonkey.net/
-// @version        0.2
+// @version        0.3
 // @description        AbemaTV TEST ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -38,23 +38,25 @@ function player_env(){
 
 
     function check_player(){
-        let logo=document.querySelector('.com-application-Header__logo');
         let video=document.querySelector('.com-a-Video__video-element');
-        if(logo && video){
+        if(video){
             let vol=video.volume;
-            vol_disp(logo, vol);
+            let MVolume=Math.round(vol*10)/10
 
-            if(vol!='0.5'){
-                alert("🔴🔴 ボリューム値は 0.5 以外です 🔴🔴"); }
+            if(MVolume!='0.8'){
+                vol_disp(1, MVolume); }
+            else{
+                vol_disp(0, MVolume); }
 
 
             video.addEventListener('volumechange', ()=>{
                 setTimeout(()=>{
-                    let current_vol=video.volume;
-                    vol_disp(logo, current_vol);
+                    let current_vol=Math.round(video.volume*10)/10;
 
-                    if(current_vol!='0.5'){
-                        alert("🔴🔴 ボリューム値は 0.5 以外に変更されました 🔴🔴"); }
+                    if(current_vol!='0.8'){
+                        vol_disp(1, current_vol); }
+                    else{
+                        vol_disp(0, current_vol); }
                 }, 200); }); }
         else{
             clear_disp(); }
@@ -63,21 +65,32 @@ function player_env(){
 
 
 
-    function vol_disp(logo, vol){
+    function vol_disp(n, vol){
         clear_disp();
 
-        let v_show=
-            '<div class="v_show">'+ vol +
-            '<style>.v_show { position: absolute; top: 20px; left: 200px; padding: 2px 6px 0px; '+
-            'font: bold 16px Meiryo; color: #fff; border: 1px solid #fff; } </style></div>';
-        logo.insertAdjacentHTML('beforeend', v_show);
+        let show;
+        if(n==0){
+            show='<dialog class="s_vol">'+ vol; }
+        else if(n==1){
+            show='<dialog class="s_vol">'+ vol +'　🟥🟥 標準値以外です 🟥🟥'; }
+        show+=
+            '<style>.s_vol { position: fixed; top: 21px; left: 10px; z-index: 20; '+
+            'padding: 2px 6px 0; outline: none; border: 1px solid #000; border-radius: 2px; '+
+            'background: #fff; } '+
+            '</style></dialog>';
+        if(!document.querySelector('.s_vol')){
+            document.body.insertAdjacentHTML('beforeend', show); }
 
-    } // vol_disp(logo, vol)
+        let s_vol=document.querySelector('.s_vol');
+        if(s_vol){
+            s_vol.show(); }
+
+    } // vol_disp(n, vol)
 
 
 
     function clear_disp(){
-        if(document.querySelector('.v_show')){
-            document.querySelector('.v_show').remove(); }}
+        if(document.querySelector('.s_vol')){
+            document.querySelector('.s_vol').remove(); }}
 
 } // player_env
