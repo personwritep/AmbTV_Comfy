@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.3
+// @version        8.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -75,7 +75,7 @@ function player_env(){
         let style=
             '<style class="atv_style">'+
             '.c-common-HeaderContainer-header, '+
-            '.c-application-SideNavigation, '+
+            '.com-application-SideNavigation, '+
             '.c-video-EpisodeContainerView-breadcrumb { display: none !important; } '+
             '.com-vod-VODRecommendedContentsContainerViewEpisode__above--show-player-aside '+
             '{ display: block; } '+
@@ -139,6 +139,7 @@ function player_env(){
             '[class*="NextContentCard__recommend-content-bg"] { background: none; } '+
             '.com-pages-episode-NextContentCard__inner { '+
             'padding: 10px; background: rgb(0 0 0 / 50%); } '+
+            '.com-video-EpisodePlayerSectionExternalContent { display: none; } '+ // 🟠 見放題AD
             '</style>';
 
         if(!player.querySelector('.atv_style')){
@@ -990,7 +991,8 @@ function creat_iframe(url){
         '.com-timetable-ArrowButtons__arrow-button-wrapper{ '+
         'left: 480px; width: calc(100% - 480px); } '+
         '.com-timetable-ArrowButtons__arrow-button-left { left: 30px; } '+
-        '.c-application-SideNavigation { width: 480px; } '+
+        '.com-application-SideNavigation { width: 480px; } '+
+        '.com-timetable-DesktopTimeTableWrapper__header-wrapper { left: 480px; } '+
         '</style></div>';
 
     if(document.querySelector('#if_wrap')){
