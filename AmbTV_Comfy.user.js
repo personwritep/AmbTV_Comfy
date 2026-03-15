@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.4
+// @version        8.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -156,9 +156,10 @@ function player_env(){
         else{
             hide_cont(1); } // 🟩 コントロール非表示
 
-        let atv_style_ex=player.querySelector('.atv_style_ex'); // 🟥 拡大表示
-        if(atv_style_ex){
-            atv_style_ex.disabled=true; }
+        if(sessionStorage.getItem('AmbTV_M')!='1'){
+            set_exm(0); } // 🟥 拡大表示なし
+        else{
+            set_exm(1); } // 🟥 拡大表示
 
 
         ad_block(player); // ADブロック
@@ -237,6 +238,18 @@ function player_env(){
             if(n==1){
                 sessionStorage.setItem('AmbTV_H', '1');
                 atv_style_hide.disabled=false; }}} // 🟩 コントロールを非表示
+
+
+
+    function set_exm(n){
+        let atv_style_ex=document.querySelector('.atv_style_ex');
+        if(atv_style_ex){
+            if(n==0){
+                sessionStorage.setItem('AmbTV_M', '0');
+                atv_style_ex.disabled=true; } // 🟥 拡大表示なし
+            if(n==1){
+                sessionStorage.setItem('AmbTV_M', '1');
+                atv_style_ex.disabled=false; }}} // 🟥 拡大表示
 
 
 
@@ -384,24 +397,28 @@ function player_env(){
 
 
 
-    function ex_view(){ // 🟥 拡大表示
+    function ex_view(){
         let buttons=document.querySelectorAll(
             '.com-vod-VideoControlBar__right .com-vod-VODScreen__button');
         let full_sw=buttons[buttons.length-1];
         if(full_sw){
             let full_icon=full_sw.querySelector('.com-vod-VideoControlButton__icon');
-            let atv_style_ex=document.querySelector('.atv_style_ex');
-            if(full_icon && atv_style_ex){
+            if(full_icon){
+                if(sessionStorage.getItem('AmbTV_M')!='1'){
+                    full_icon.style.color='#fff'; }
+                else{
+                    full_icon.style.color='red'; }
+
                 full_icon.onclick=(event)=>{
                     if(event.ctrlKey){
                         event.preventDefault();
                         event.stopImmediatePropagation();
-                        if(atv_style_ex.disabled==true){
-                            atv_style_ex.disabled=false;
+                        if(sessionStorage.getItem('AmbTV_M')!='1'){
+                            set_exm(1); // 🟥 拡大表示
                             full_icon.style.color='red'; }
                         else{
-                            atv_style_ex.disabled=true;
-                            full_icon.style.color='#fff';}}}}}}
+                            set_exm(0); // 🟥 拡大表示なし
+                            full_icon.style.color='#fff'; }}}}}}
 
 
 
