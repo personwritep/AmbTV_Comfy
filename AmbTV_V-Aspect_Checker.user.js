@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        AmbTV Aspect Checker
+// @name        AmbTV V-Aspect Checker
 // @namespace        http://tampermonkey.net/
 // @version        0.1
 // @description        AbemaTV ユーティリティ
@@ -7,8 +7,8 @@
 // @match        https://abema.tv/*
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
 // @grant        none
-// @updateURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Aspect_Checker.user.js
-// @downloadURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Aspect_Checker.user.js
+// @updateURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_V-Aspect_Checker.user.js
+// @downloadURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_V-Aspect_Checker.user.js
 // ==/UserScript==
 
 
