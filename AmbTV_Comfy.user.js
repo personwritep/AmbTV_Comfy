@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.7
+// @version        8.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -1045,6 +1045,8 @@ function creat_iframe(url){
 function set_iframe(){
     let in_style=
         '<style class="in_style">'+
+        // スクロールチェーンを抑止
+        'html { overscroll-behavior: none; } '+
         // iframeの初期表示を改善
         'body { padding-top: 100vh; } '+
         '.com-vod-VODMiniPlayerWrapper__player--mini, '+
@@ -1126,17 +1128,6 @@ function set_if_env(){
             video_el.muted=true; // 🟨
             video_el.addEventListener('timeupdate', function(){
                 video_el.pause(); }); }}
-
-
-    setTimeout(()=>{ // 配信リストが無い場合に標準のマイリストボタンを非表示にする
-        let ContentList=document.querySelector('.com-content-list-ContentList');
-        if(!ContentList){
-            let mlb_reset=
-                '<style>'+
-                '.com-shared-my-list-MylistButtonForEpisodeAndSeries__content { display: unset; } '+
-                '</style>';
-            document.body.insertAdjacentHTML('beforeend', mlb_reset);
-        }}, 2000); // 2sec後
 
 } // set_if_env()
 
@@ -1267,12 +1258,9 @@ function list_link_if(){
                 '.com-contentlist-ItemListForContentlistContent__item, '+
                 '.com-contentlist-ItemListForVideoSeriesProgram__item');
             if(li_elem){ // iframeを開いた項目で、リンクが無いリスト項目から動画プレーヤーを開く
-                let url=location.href;
-                if(url.includes('&atv_if')){
-                    url=url.replace('&atv_if', ''); }
-                else if(url.includes('?atv_if')){
-                    url=url.replace('?atv_if', ''); }
-                window.parent.location.href=url; }}
+                let if_wrap=window.parent.document.querySelector('#if_wrap');
+                if(if_wrap){
+                    if_wrap.remove(); }}}
     });
 
 
