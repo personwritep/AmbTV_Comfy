@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.6
+// @version        8.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -90,7 +90,8 @@ function player_env(){
 
             // slots playrer
             '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
-            '.com-vod-VODRecommendedContentsContainerView__player-and-details { margin-right: 0; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
+            'margin-right: 0; } '+
             '.com-vod-VODRecommendedContentsContainerView__player { margin-bottom: 0; } '+
             '.com-vod-VODRecommendedContentsContainerView__details, '+
             '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
@@ -147,7 +148,7 @@ function player_env(){
             set_exm(1); } // 🟥 拡大表示
 
 
-        ad_block(player); // ADブロック
+        //     ad_block(player); // ADブロック 💢💢2026.04.14 システム変更で機能停止しています💢💢
 
 
         setTimeout(()=>{
@@ -658,14 +659,12 @@ function sort_and_free(){
         '.com-contentlist-SectionItemList--subscription-pss { padding: 0; } '+
 
         // 標準の配信リストのアイテム
-        '.com-contentlist-ContentlistContainer li>div, '+
-        '.com-content-list-ContentList li>div { padding: 8px; } '+
-        '.com-contentlist-ContentlistContainer li>div:has([class$="ViewingTypeLabel__text--free"]), '+
-        '.com-content-list-ContentList li>div:has([class$="ViewingTypeLabel__text--free"]) { '+
+        '.com-contentlist-ContentlistContainer li>div { padding: 8px; } '+
+        '.com-contentlist-ContentlistContainer li>div:has([class$="ViewingTypeLabel__text--free"]) { '+
         'background: #002e3a; } '+
 
         // スロットグループの配信リストのアイテム
-        '.com-my-list-MyListItem { margin: 2px 0; } '+
+        '.com-my-list-MyListBaseItem { margin: 2px 0; } '+
         '.com-my-list-MyListBaseItem__wrapper { margin: 0; padding: 8px; } '+
         '.com-my-list-SlotListItem__start-at { color: #fff; } '+
         '.com-my-list-MyListBaseItem__wrapper:has([class$="ViewingTypeLabel__text--free"]) { '+
@@ -707,10 +706,9 @@ function set_order(){
         if(retry2>10){ // リトライ制限 2secまで
             clearInterval(interval2); }
 
-        let ul=document.querySelectorAll( // 🔵3種クラス名
-            '.com-content-list-ContentListItemList, '+
-            '.com-contentlist-ItemListForContentlistContent, '+
-            '.com-contentlist-SectionItemList')[0];
+        let ul=document.querySelectorAll( // 🔵2種クラス名
+            '.com-contentlist-SectionItemList, '+
+            '.com-contentlist-ItemListForContentlistContent')[0];
         if(ul){
             clearInterval(interval2);
 
@@ -815,9 +813,10 @@ function disp_list(){ //「配信リスト表示」
             else if(!location.pathname.includes('/timetable')){
                 if(!location.pathname.includes('/video/title/')){
                     if(event.ctrlKey){ // 動画再生中でリンクが無いリスト項目から配信リストを表示する
-                        let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
-                        if(!li_elem){ // 🔵2種クラス名　通常動画・ニュース
-                            li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
+                        let li_elem=elem.closest(
+                            '.com-contentlist-SectionItemList__item, '+ // 🔵3種クラス名 通常・ニュース
+                            '.com-contentlist-ItemListForContentlistContent__item, '+
+                            '.com-contentlist-ItemListForVideoSeriesProgram__item');
                         if(li_elem){
                             let url=location.href;
                             if(url.includes('?')){
@@ -1048,21 +1047,18 @@ function set_iframe(){
         '<style class="in_style">'+
         // iframeの初期表示を改善
         'body { padding-top: 100vh; } '+
-        '.com-application-Header { margin-top: -100px; } '+
-        '.com-vod-VODRecommendedContentsContainerView__details { '+
-        'margin-bottom: 100vh; } '+
         '.com-vod-VODMiniPlayerWrapper__player--mini, '+
         '.com-vod-VODMiniPlayerWrapper__player--bg-mini { top: 100vh; display: none; } '+
 
         // 配信リストの配置
-        '.com-vod-VODRecommendedContentsContainerView__player-and-details, '+
-        '.com-slot-group-SlotList, '+
         '.com-contentlist-ContentlistContainer, '+
-        '.com-content-list-ContentList { '+
+        '.com-slot-group-SlotList, '+
+        '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'position: fixed; top: 0; left: 0; z-index: 32; width: 476px; '+
         'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'padding: 44px 0 0 8px; } '+
+
 
         '[class$="Header__title"], [class$="SeriesTitle"] { padding: 16px 16px 20px; } '+
 
@@ -1093,7 +1089,6 @@ function set_iframe(){
         '.like_clone { height: 21px; width: 21px; margin: 12px 12px 10px 12px; '+
         'border-radius: 20px; background: #ffcc00; } '+
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
-
         // マイリスト登録時のプルダウン表示パネル
         '.com-m-NotificationManager { display: none; } '+
         '</style>';
@@ -1267,10 +1262,11 @@ function list_link_if(){
                 if(url){
                     window.parent.location.href=url; }}}
         else{
-            let li_elem=elem.closest('.com-contentlist-ItemListForContentlistContent__item');
-            if(!li_elem){ // 🔵2種クラス名　通常動画・ニュース
-                li_elem=elem.closest('.com-contentlist-ItemListForVideoSeriesProgram__item'); }
-            if(li_elem){ // iframeを開いた項目で、リンクが設定されていないリスト項目
+            let li_elem=elem.closest(
+                '.com-contentlist-SectionItemList__item, '+ // 🔵3種クラス名 通常・ニュース
+                '.com-contentlist-ItemListForContentlistContent__item, '+
+                '.com-contentlist-ItemListForVideoSeriesProgram__item');
+            if(li_elem){ // iframeを開いた項目で、リンクが無いリスト項目から動画プレーヤーを開く
                 let url=location.href;
                 if(url.includes('&atv_if')){
                     url=url.replace('&atv_if', ''); }
