@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.8
+// @version        8.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -48,9 +48,9 @@ function player_env(){
         retry0++;
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0); }
-        let player=document.querySelector('.c-vod-EpisodePlayerContainer-wrapper'); // player
-        if(!player){
-            player=document.querySelector('.c-tv-TimeshiftPlayerContainerView'); } // slots playrer
+        let player=document.querySelectorAll( // 🔵2種クラス名
+            '.c-vod-EpisodePlayerContainer-wrapper, '+ // player
+            '.c-tv-TimeshiftPlayerContainerView')[0]; // slots playrer
         if(player){
             clearInterval(interval0);
             set_player(player); }}
@@ -61,7 +61,7 @@ function player_env(){
             '<style class="atv_style">'+
             '.c-common-HeaderContainer-header, '+
             '.com-application-SideNavigation, '+
-            '.c-video-EpisodeContainerView-breadcrumb { display: none !important; } '+
+            '.com-m-BreadcrumbList { display: none !important; } '+
             '.com-vod-VODRecommendedContentsContainerViewEpisode__above--show-player-aside '+
             '{ display: block; } '+
             '.com-vod-VODRecommendedContentsContainerViewEpisode__details-and-episode-list, '+
@@ -89,13 +89,13 @@ function player_env(){
             '{ display: none; } '+
 
             // slots playrer
-            '.c-tv-TimeshiftSlotContainerView-breadcrumb { display: none; } '+
             '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
             'margin-right: 0; } '+
             '.com-vod-VODRecommendedContentsContainerView__player { margin-bottom: 0; } '+
             '.com-vod-VODRecommendedContentsContainerView__details, '+
             '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
             '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended, '+
+            '.com-vod-VODRecommendedContentsContainerView__module-sections, '+
             '.c-tv-TimeshiftSlotContainerView__page-bottom { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { '+
             'padding: 0; height: calc(100vh - 12px) !important; } '+
@@ -105,13 +105,15 @@ function player_env(){
             '</style>'+
 
             '<style class="atv_style_ex">'+
-            '.com-vod-VODScreen__player { '+
+            '#fluffy-video-view { '+
             'height: 100% !important; width: 132% !important; margin-left: -16%; } '+
             '</style>'+
 
             '<style class="atv_style_hide">'+
             '.com-vod-VODScreen-container { cursor: none; } '+
-            '.com-vod-VideoControlBar, .com-vod-VODScreen__video-control-bg { '+
+            '.com-vod-VideoControlBar, '+
+            '.com-vod-VODScreen__video-control-bg, '+
+            '.c-tv-TimeshiftPlayerContainerView-comment-button { '+
             'display: none !important; } '+
             '</style>'+
 
@@ -148,7 +150,7 @@ function player_env(){
             set_exm(1); } // 🟥 拡大表示
 
 
-        //     ad_block(player); // ADブロック 💢💢2026.04.14 システム変更で機能停止しています💢💢
+        //  ad_block(player); // ADブロック 💢💢2026.04.14 システム変更で機能停止しています💢💢
 
 
         setTimeout(()=>{
@@ -350,9 +352,10 @@ function player_env(){
 
 
     function reset_mute(){
-        let video=document.querySelector('.com-a-Video__video-element');
+        let video=document.querySelector('.com-vod-VODScreen__player video');
         if(video){
             video.volume=localStorage.getItem('AmbTV_V'); // 再生ボリュームをリセット 🟨
+            slider_act(video.volume);
 
             video.addEventListener('volumechange', ()=>{
                 let setVolume=Math.round(video.volume*10)/10
@@ -518,7 +521,7 @@ function player_env(){
 
 
     function trim_play(player){
-        let video_elem=player.querySelector('.com-a-Video__video-element');
+        let video_elem=player.querySelector('.com-vod-VODScreen__player video');
         if(video_elem){
             document.onkeydown=function(event){
                 if(!event.shiftKey){
@@ -555,14 +558,16 @@ function player_env(){
 
 
             function vol_con(n){
-                let video=document.querySelector('.com-a-Video__video-element'); // 🟨
+                let video=document.querySelector('.com-vod-VODScreen__player video'); // 🟨
                 if(video){
                     if(n==0){
                         if(video.volume>=0.1){
-                            video.volume -=0.1 }}
+                            video.volume -=0.1
+                            slider_act(video.volume); }}
                     if(n==1){
                         if(video.volume<=0.9){
-                            video.volume +=0.1 }}}}
+                            video.volume +=0.1
+                            slider_act(video.volume); }}}}
 
         } // if(video_elem)
 
@@ -638,6 +643,17 @@ function player_env(){
         } // send_page()
 
     } // trim_play()
+
+
+
+    function slider_act(vol){
+        let bar=document.querySelector('.com-a-Slider__bar');
+        if(bar){
+            let v_hight=getComputedStyle(bar).height.replace('px', '');
+            let hilight=bar.querySelector('.com-a-Slider__highlighter');
+            if(hilight){
+                hilight.style.height=(v_hight/1)*vol +'px'; }}}
+
 
 
     sort_and_free();
