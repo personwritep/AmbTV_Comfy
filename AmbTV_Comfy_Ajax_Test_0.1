@@ -153,8 +153,8 @@ function creat_f_ajax(url){
             //         let elements=htmlDoc.querySelectorAll('.c-application-DesktopAppContainer__content');
             //         let elements=htmlDoc.querySelectorAll('.com-content-list-ContentList');
             let elements=htmlDoc.querySelectorAll(
-                '.com-content-list-ContentList, .com-contentlist-ContentlistContainer'); // 表示させる要素
-
+            //        '.com-content-list-ContentList, .com-contentlist-ContentlistContainer'); // 表示させる要素
+                       '.com-contentlist-ContentlistSection, .com-contentlist-ContentlistContainer'); // 表示させる要素
             if(area){
                 for (var i=0; i<elements.length; i++){
                     area.appendChild(elements[i].cloneNode(true)); }}
