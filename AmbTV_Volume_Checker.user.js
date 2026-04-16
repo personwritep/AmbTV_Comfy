@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Volume Checker
 // @namespace        http://tampermonkey.net/
-// @version        0.4
+// @version        0.5
 // @description        AbemaTV TEST ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -26,7 +26,7 @@ function player_env(){
         if(retry0>100){ // リトライ制限 100回 2secまで
             clearInterval(interval0);
             clear_disp(); }
-        let video=document.querySelector('.com-a-Video__video-element'); // video
+        let video=document.querySelector('.com-vod-VODScreen__player video'); // video
         if(video){
             clearInterval(interval0);
             setTimeout(()=>{
