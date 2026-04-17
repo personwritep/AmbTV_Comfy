@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Thum Checker
 // @namespace        http://tampermonkey.net/
-// @version        0.1
+// @version        0.2
 // @description        AmbTV Comfy 点検用のチェックツール
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -60,19 +60,24 @@ function thum_tester(){ // 動画のサムネイルの「暗転拡大表示」
             thum_elem=card_elem.querySelector('.com-m-Thumbnail');
             img_call3(thum_elem); }
 
-        // 🟡 動画リスト（書庫トップ・動画プレーヤー・マイリスト）
+        // 🟢 動画リスト（書庫トップ・動画プレーヤー・マイリスト）
         else if(card_elem=elem.closest(
             '.com-contentlist-ContentlistEpisodeItem, '+
             '.com-contentlist-VideoSeriesProgramItem, '+ // ニュース
             '.com-my-list-MyListBaseItem, '+ // マイリスト
             '.com-contentlist-ContentlistLiveEventItem')){ // スポーツ
             thum_elem=card_elem.querySelector('.com-m-Thumbnail');
-            img_call4(thum_elem); }
+            img_call3(thum_elem); }
 
-        // シーズンセレクタ
+        // 🟡 シーズンセレクタ
         else if(card_elem=elem.closest('.com-contentlist-SeasonTabCarousel__item')){
             thum_elem=card_elem.querySelector('.com-m-Thumbnail');
-            img_call2(thum_elem); }
+            img_call4(thum_elem); }
+
+        // 🟡 ホームのTVチャンネル
+        else if(card_elem=elem.closest('.com-pages-home-HomePreviewContentCardItem')){
+            thum_elem=card_elem.querySelector('.com-m-Thumbnail');
+            img_call4(thum_elem); }
 
         // ⚪ 書庫トップ（小サムネイル・詳細情報の画像）・番組表の右パネル・OnAir
         else if(thum_elem=elem.closest(
