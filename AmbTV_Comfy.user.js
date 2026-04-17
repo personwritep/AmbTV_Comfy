@@ -150,7 +150,7 @@ function player_env(){
             set_exm(1); } // 🟥 拡大表示
 
 
-        //  ad_block(player); // ADブロック 💢💢2026.04.14 システム変更で機能停止しています💢💢
+        ad_block(player); // ADブロック
 
 
         setTimeout(()=>{
@@ -198,7 +198,7 @@ function player_env(){
             retry1++;
             if(retry1>100){ // リトライ制限 100回 2secまで
                 clearInterval(interval1); }
-            let ad_container=player.querySelector('#videoAdContainer > div');
+            let ad_container=player.querySelector('#videoAdContainer');
             if(ad_container){
                 clearInterval(interval1);
                 ad_container.remove(); }}}
