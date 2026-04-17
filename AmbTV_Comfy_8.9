@@ -355,7 +355,6 @@ function player_env(){
         let video=document.querySelector('.com-vod-VODScreen__player video');
         if(video){
             video.volume=localStorage.getItem('AmbTV_V'); // 再生ボリュームをリセット 🟨
-            slider_act(video.volume);
 
             video.addEventListener('volumechange', ()=>{
                 let setVolume=Math.round(video.volume*10)/10
