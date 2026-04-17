@@ -1,0 +1,110 @@
+// ==UserScript==
+// @name        AmbTV Thum Checker
+// @namespace        http://tampermonkey.net/
+// @version        0.2
+// @description        AmbTV Comfy 点検用のチェックツール
+// @author        AbemaTV User
+// @match        https://abema.tv/*
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @grant        none
+// @updateURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Thum_Checker.user.js
+// @downloadURL        https://github.com/personwritep/AmbTV_Comfy/raw/main/AmbTV_Thum_Checker.user.js
+// ==/UserScript==
+
+
+let target=document.querySelector('body');
+let monitor=new MutationObserver(thum_tester);
+monitor.observe(target, { childList: true, subtree: true });
+
+
+thum_tester();
+
+
+function thum_tester(){ // 動画のサムネイルの「暗転拡大表示」
+
+    let img_all=document.querySelectorAll('img');
+    for(let k=0; k<img_all.length; k++){
+        test_img(img_all[k]); }
+
+
+    function test_img(elem){
+        let thum_elem;
+        let card_elem;
+
+        // 🔴 サムネイル一般
+        if(card_elem=elem.closest('.com-shared-feature-area-CardItem')){
+            thum_elem=card_elem.querySelector('.com-shared-feature-area-CardItem__thumb');
+            img_call0(thum_elem); }
+
+        // 🔵 書庫トップのタイトル・各種ランキング
+        else if(thum_elem=elem.closest('.com-m-PortraitThumbnail')){
+            img_call1(thum_elem); }
+
+        // ⚪ 無料の定番アニメ・本日のランキング・ABEMAオリジナル
+        else if(card_elem=elem.closest(
+            '.com-shared-FeatureEpisodeRankingItem, '+
+            '.com-shared-feature-area-FeatureOriginalLimitedItem, '+
+            '.com-shared-feature-area-FeaturePlaylistGroupItem')){
+            thum_elem=card_elem.querySelectorAll(
+                '.com-m-Thumbnail, .com-feature-area-LimitedContentThumbnail')[0];
+            img_call2(thum_elem); }
+
+        // 🟢 動画プレーヤーの右サイドリスト
+        else if(card_elem=elem.closest(
+            '.com-feature-area-SeriesListItem, '+
+            '.com-shared-playlist-PlaylistItem, '+ // サブリスト
+            '.com-feature-area-SlotListItem, '+
+            '.com-feature-area-EpisodeListItem, '+
+            '.com-feature-area-LiveEventListItem, '+ // スポーツ
+            '.com-feature-area-LinkListItem')){ // スポーツ
+            thum_elem=card_elem.querySelector('.com-m-Thumbnail');
+            img_call3(thum_elem); }
+
+        // 🟢 動画リスト（書庫トップ・動画プレーヤー・マイリスト）
+        else if(card_elem=elem.closest(
+            '.com-contentlist-ContentlistEpisodeItem, '+
+            '.com-contentlist-VideoSeriesProgramItem, '+ // ニュース
+            '.com-my-list-MyListBaseItem, '+ // マイリスト
+            '.com-contentlist-ContentlistLiveEventItem')){ // スポーツ
+            thum_elem=card_elem.querySelector('.com-m-Thumbnail');
+            img_call3(thum_elem); }
+
+        // 🟡 シーズンセレクタ
+        else if(card_elem=elem.closest('.com-contentlist-SeasonTabCarousel__item')){
+            thum_elem=card_elem.querySelector('.com-m-Thumbnail');
+            img_call4(thum_elem); }
+
+        // 🟡 ホームのTVチャンネル
+        else if(card_elem=elem.closest('.com-pages-home-HomePreviewContentCardItem')){
+            thum_elem=card_elem.querySelector('.com-m-Thumbnail');
+            img_call4(thum_elem); }
+
+        // ⚪ 書庫トップ（小サムネイル・詳細情報の画像）・番組表の右パネル・OnAir
+        else if(thum_elem=elem.closest(
+            '.com-m-Thumbnail, .com-feature-area-LimitedContentThumbnail')){
+            img_call2(thum_elem); }
+
+
+        function img_call0(thum){ // 🔴
+            if(thum){
+                thum.style.border='5px dashed red'; }}
+
+        function img_call1(thum){ // 🔵
+            if(thum){
+                thum.style.border='5px dashed blue'; }}
+
+        function img_call2(thum){ // ⚪
+            if(thum){
+                thum.style.border='5px dashed #fff'; }}
+
+        function img_call3(thum){ // 🟢
+            if(thum){
+                thum.style.border='5px dashed green'; }}
+
+        function img_call4(thum){ // 🟡
+            if(thum){
+                thum.style.border='5px dashed yellow'; }}
+
+    } // test_img()
+
+} // thum_tester()
