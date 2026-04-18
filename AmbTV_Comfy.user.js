@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        8.9
+// @version        9.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -1306,28 +1306,54 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
             let thum_elem;
             let card_elem;
 
-            if(elem.closest('.com-shared-feature-area-CardItem')){
-                card_elem=elem.closest('.com-shared-feature-area-CardItem');
+            // サムネイル一般
+            if(card_elem=elem.closest('.com-shared-feature-area-CardItem')){
                 thum_elem=card_elem.querySelector('.com-shared-feature-area-CardItem__thumb'); }
-            else if(elem.closest('.com-m-PortraitThumbnail')){
-                thum_elem=elem.closest('.com-m-PortraitThumbnail'); }
-            else if(elem.querySelector('.com-feature-area-LimitedContentThumbnail')){
-                thum_elem=elem.querySelector('.com-feature-area-LimitedContentThumbnail'); }
-            else if(elem.closest('.com-shared-feature-area-RankingCardItem')){
-                card_elem=elem.closest('.com-shared-feature-area-RankingCardItem');
+            // 書庫トップのタイトル・各種ランキング
+            else if(thum_elem=elem.closest('.com-m-PortraitThumbnail')){ ; }
+            // 無料の定番アニメ・本日のランキング・ABEMAオリジナル
+            else if(card_elem=elem.closest(
+                '.com-shared-FeatureEpisodeRankingItem, '+
+                '.com-shared-feature-area-FeatureOriginalLimitedItem, '+
+                '.com-shared-feature-area-FeaturePlaylistGroupItem')){
+                thum_elem=card_elem.querySelectorAll(
+                    '.com-m-Thumbnail, .com-feature-area-LimitedContentThumbnail')[0]; }
+            // 動画プレーヤーの右サイドリスト
+            else if(card_elem=elem.closest(
+                '.com-feature-area-SeriesListItem, '+
+                '.com-shared-playlist-PlaylistItem, '+
+                '.com-feature-area-SlotListItem, '+
+                '.com-feature-area-EpisodeListItem, '+
+                '.com-feature-area-LiveEventListItem, '+
+                '.com-feature-area-LinkListItem')){
                 thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
-            else if(elem.closest('.com-feature-area-SeriesListItem')){
-                card_elem=elem.closest('.com-feature-area-SeriesListItem');
+            // 動画リスト（書庫トップ・動画プレーヤー・マイリスト）
+            else if(card_elem=elem.closest(
+                '.com-contentlist-ContentlistEpisodeItem, '+
+                '.com-contentlist-VideoSeriesProgramItem, '+ // ニュース
+                '.com-my-list-MyListBaseItem, '+ // マイリスト
+                '.com-contentlist-ContentlistLiveEventItem')){ // スポーツ
                 thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
-            else if(elem.closest('.com-timetable-SideSlotDetailThumbnail')){
-                card_elem=elem.closest('.com-timetable-SideSlotDetailThumbnail');
+            // シーズンセレクタ
+            else if(card_elem=elem.closest('.com-contentlist-SeasonTabCarousel__item')){
                 thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
+            // ホームのTVチャンネル
+            else if(card_elem=elem.closest('.com-pages-home-HomePreviewContentCardItem')){
+                thum_elem=card_elem.querySelector('.com-m-Thumbnail'); }
+            // 書庫トップ（小サムネイル・詳細情報の画像）・番組表の右パネル・OnAir
+            else if(thum_elem=elem.closest(
+                '.com-m-Thumbnail, .com-feature-area-LimitedContentThumbnail')){ ; }
+
 
             if(thum_elem){
                 set_link(link_elem);
                 set_list(link_elem, thum_elem);
                 set_img(thum_elem);
-                close(link_elem, thum_elem); }}});
+                close_box(); }
+
+        } // if(!event.shiftKey && !event.ctrlKey)
+
+    });
 
 
 
@@ -1435,7 +1461,7 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
 
 
 
-    function close(){
+    function close_box(){
         let html_=document.querySelector('html');
         let lightbox=document.querySelector('#lightbox');
         let box_img=lightbox.querySelector('#box_img');
@@ -1457,7 +1483,7 @@ function light_box(){ // 動画のサムネイルの「暗転拡大表示」
                     box_img.src='';
                 }, 200); }}
 
-    } // close()
+    } // close_box()
 
 
 
