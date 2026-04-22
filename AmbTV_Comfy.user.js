@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.0
+// @version        9.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -372,8 +372,8 @@ function player_env(){
             if(full_sw){
                 let ues=full_sw.querySelector('use');
                 if(ues){
-                    let monitor_sw=new MutationObserver(sw_cont);
-                    monitor_sw.observe(ues, { attributes: true });
+                    let monitor2=new MutationObserver(sw_cont);
+                    monitor2.observe(ues, { attributes: true });
                     function sw_cont(){
                         setTimeout(()=>{
                             if(sessionStorage.getItem('AmbTV_S')=='1'){
@@ -419,33 +419,44 @@ function player_env(){
                 PR_icon.style.boxShadow='0 -7px 0 -4px #FF9800'; }
 
             if(sessionStorage.getItem('AmbTV_E')=='1'){ // エンドロール表示モード 🔵
-                PR_icon.style.color='red'; }
-            else if(sessionStorage.getItem('AmbTV_E')=='2'){
                 PR_icon.style.color='#2196f3'; }
+            else if(sessionStorage.getItem('AmbTV_E')=='2'){
+                PR_icon.style.color='red'; }
             else if(sessionStorage.getItem('AmbTV_E')=='3'){
                 PR_icon.style.color='#44ff00'; }
             else{
                 PR_icon.style.color='#fff'; }
 
             PR_icon.onclick=function(event){
-                if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
-                    sessionStorage.setItem('AmbTV_E', '2');
+                if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🔵
+                    sessionStorage.setItem('AmbTV_E', '1');
                     PR_icon.style.color='#2196f3'; }
+                else if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
+                    sessionStorage.setItem('AmbTV_E', '2');
+                    PR_icon.style.color='red'; }
                 else if(sessionStorage.getItem('AmbTV_E')=='2'){ // 🔵
-                    sessionStorage.setItem('AmbTV_E', '3');
-                    PR_icon.style.color='#44ff00'; }
-                else if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '0');
                     PR_icon.style.color='#fff'; }
                 else{
-                    sessionStorage.setItem('AmbTV_E', '1'); // 🔵
-                    PR_icon.style.color='red'; }}}
+                    sessionStorage.setItem('AmbTV_E', '3'); // 🔵
+                    PR_icon.style.color='#44ff00'; }}}
+
 
         let info=player_type(0);
         if(info){
-            info_sw();
-            let monitor2=new MutationObserver(info_sw); // infoパネルを監視
-            monitor2.observe(info, { attributes: true }); }
+            let observer3=new ResizeObserver(info_sw);
+            observer3.observe(info); }
+
+
+        let SeekBar=document.querySelector('.com-playback-SeekBar__highlighter');
+        if(SeekBar){
+            let observer4=new ResizeObserver(bar_end)
+            observer4.observe(SeekBar);
+
+            function bar_end(){
+                let sbw=parseFloat(SeekBar.style.width);
+                if(sbw==100){
+                    info_sw(); }}}
 
     } // end_roll()
 
@@ -492,11 +503,16 @@ function player_env(){
         let fll_end=sessionStorage.getItem('AmbTV_E'); // エンドロール表示モード 🔵
 
         if(cancel && SeekBar){
-            let sbw=SeekBar.getAttribute('style').replace(/[^0-9]/g, '').slice(0, 2);
-            sbw=parseInt(sbw, 10);
+            let sbw=parseFloat(SeekBar.style.width);
             if(fll_end=='1'){
-                if(sbw!=10 && sbw<99 ){ // エンドロールの最初のみキャンセルを押す
+                if(sbw<99 ){ // エンドロールの最初のみキャンセルを押す
                     cancel.click(); }
+
+                else if(sbw==100){
+                    if(once==0){ // 🔴
+                        once+=1;
+                        next.click(); }}
+
                 else{
                     player_type(3).style.opacity='0';
                     setTimeout(()=>{
