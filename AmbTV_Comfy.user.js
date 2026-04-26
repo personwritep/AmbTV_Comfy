@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.1
+// @version        9.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -463,7 +463,9 @@ function player_env(){
 
 
     function player_type(n){
-        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
+        let player=document.querySelectorAll( // 🔵2種クラス名
+            '.c-vod-EpisodePlayerContainer-wrapper, '+ // player
+            '.c-tv-TimeshiftPlayerContainerView')[0]; // slots playrer
         let cancel;
         if(player){
             let pb=player.querySelectorAll('button');
@@ -496,10 +498,9 @@ function player_env(){
 
 
     function info_sw(){
-        let player=document.querySelector('.com-vod-VODMiniPlayerWrapper');
         let cancel=player_type(1);
         let next=player_type(2);
-        let SeekBar=player.querySelector('.com-playback-SeekBar__highlighter');
+        let SeekBar=document.querySelector('.com-playback-SeekBar__highlighter');
         let fll_end=sessionStorage.getItem('AmbTV_E'); // エンドロール表示モード 🔵
 
         if(cancel && SeekBar){
