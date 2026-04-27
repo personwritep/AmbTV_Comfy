@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.2
+// @version        9.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -554,10 +554,11 @@ function player_env(){
                         if(video_elem.paused==false){
                             video_elem.play(); }}}
                 else{
-                    let slider=document.querySelector('.com-playback-Volume__slider-container');
-                    if(slider){
-                        slider.style.opacity='1';
-                        slider.style.visibility='visible'; }
+                    let slider_h=document.querySelector('.com-playback-Volume__slider-container');
+                    if(slider_h && is_slider_hidden()){
+                        slider_act();
+                        slider_h.style.opacity='1';
+                        slider_h.style.visibility='visible'; }
 
                     if(event.keyCode=='40'){ //「⇩」キー Vol Down　🟨
                         vol_con(0); }
@@ -566,11 +567,19 @@ function player_env(){
 
 
             document.onkeyup=function(event){
-                let slider=document.querySelector('.com-playback-Volume__slider-container');
-                if(slider){
+                let slider_h=document.querySelector('.com-playback-Volume__slider-container');
+                if(slider_h){
                     if(!event.shiftKey){
-                        slider.style.opacity='0';
-                        slider.style.visibility='hidden'; }}}
+                        slider_h.style.opacity='0';
+                        slider_h.style.visibility='hidden'; }}}
+
+
+            function is_slider_hidden(){
+                let slider=document.querySelector(
+                    '.com-vod-VideoControlBar .com-playback-Volume__slider-container');
+                if(slider){
+                    if(getComputedStyle(slider).opacity!=1){
+                        return true; }}}
 
 
             function vol_con(n){
@@ -579,11 +588,11 @@ function player_env(){
                     if(n==0){
                         if(video.volume>=0.1){
                             video.volume -=0.1
-                            slider_act(video.volume); }}
+                            slider_act(); }}
                     if(n==1){
                         if(video.volume<=0.9){
                             video.volume +=0.1
-                            slider_act(video.volume); }}}}
+                            slider_act(); }}}}
 
         } // if(video_elem)
 
@@ -662,13 +671,33 @@ function player_env(){
 
 
 
-    function slider_act(vol){
-        let bar=document.querySelector('.com-a-Slider__bar');
-        if(bar){
-            let v_hight=getComputedStyle(bar).height.replace('px', '');
-            let hilight=bar.querySelector('.com-a-Slider__highlighter');
-            if(hilight){
-                hilight.style.height=(v_hight/1)*vol +'px'; }}}
+    function slider_act(){
+        let video=document.querySelector('.com-vod-VODScreen__player video'); // 🟨
+        if(video){
+            let vol=video.volume;
+            let bar_h=document.querySelector('.com-a-Slider__bar');
+            let bar=document.querySelector('.com-vod-VideoControlBar .com-a-Slider__bar');
+
+            if(bar_h){
+                let v_hight_h=getComputedStyle(bar_h).height.replace('px', '');
+                let hilight_h=bar_h.querySelector('.com-a-Slider__highlighter');
+                if(hilight_h){
+                    hilight_h.style.height=(v_hight_h/1)*vol +'px'; }}
+
+            if(bar){
+                let v_hight=getComputedStyle(bar).height.replace('px', '');
+                let hilight=bar.querySelector('.com-a-Slider__highlighter');
+                if(hilight){
+                    hilight.style.height=(v_hight/1)*vol +'px'; }}
+
+
+            let VB=document.querySelector(
+                '.com-vod-VideoControlBar .com-playback-Volume__icon-button');
+            if(VB){
+                if(VB.ariaLabel=="音声をオンにする"){ // ミュート解除
+                    VB.click(); }}}
+
+    } // slider_act()
 
 
 
@@ -1140,7 +1169,7 @@ function set_if_env(){
         retry4++;
         if(retry4>200){ // リトライ制限 4secまで
             clearInterval(interval4); }
-        let ad_container=document.querySelector('#videoAdContainer > div');
+        let ad_container=document.querySelector('#videoAdContainer');
         if(ad_container){
             clearInterval(interval4);
             ad_container.remove(); }} // AD Block
