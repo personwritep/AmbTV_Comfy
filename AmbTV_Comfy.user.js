@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.3
+// @version        9.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -27,7 +27,7 @@ if(!is_atv()){ // 通常の画面
 else{ // 配信リスト iframe内のみ
     set_iframe();
     set_if_env();
-    sort_and_free();
+    sort_and_free(1);
     like();
     list_link_if(); }
 
@@ -355,6 +355,7 @@ function player_env(){
         let video=document.querySelector('.com-vod-VODScreen__player video');
         if(video){
             video.volume=localStorage.getItem('AmbTV_V'); // 再生ボリュームをリセット 🟨
+            slider_act();
 
             video.addEventListener('volumechange', ()=>{
                 let setVolume=Math.round(video.volume*10)/10
@@ -701,13 +702,13 @@ function player_env(){
 
 
 
-    sort_and_free();
+    sort_and_free(0);
 
 } // player_env()
 
 
 
-function sort_and_free(){
+function sort_and_free(n){
     let style=
         '<style class="sort_style">'+
         '.com-contentlist-ContentlistSortSettingsButton__icon { '+
@@ -741,7 +742,7 @@ function sort_and_free(){
 
 
     dia(1);
-    set_order();
+    set_order(n);
     setTimeout(()=>{
         dia(0);
     }, 1000);
@@ -759,17 +760,22 @@ function sort_and_free(){
 
 
 
-function set_order(){
+function set_order(n){
     let retry2=0;
-    let interval2=setInterval(wait_target2, 200);
+    let interval2;
+    if(n==0){
+        interval2=setInterval(wait_target2, 200); }
+    else{
+        interval2=setInterval(wait_target2, 800); }
     function wait_target2(){
         retry2++;
         if(retry2>10){ // リトライ制限 2secまで
             clearInterval(interval2); }
 
-        let ul=document.querySelectorAll( // 🔵2種クラス名
+        let ul=document.querySelectorAll( // 🔵3種クラス名
             '.com-contentlist-SectionItemList, '+
-            '.com-contentlist-ItemListForContentlistContent')[0];
+            '.com-contentlist-ItemListForContentlistContent, '+
+            '.com-contentlist-ItemListForVideoSeriesProgram')[0];
         if(ul){
             clearInterval(interval2);
 
@@ -789,6 +795,10 @@ function set_order(){
 
             let order=document.querySelectorAll('button[class$="SettingsMenu__order-item"]')[1];
             if(order){
+                let toggle=document.querySelector('.com-a-ToggleSwitch__input');
+                if(toggle && toggle.checked==false){
+                    toggle.click(); }
+
                 if(order.ariaPressed=="false"){
                     order.click(); }
 
