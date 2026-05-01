@@ -745,7 +745,7 @@ function sort_and_free(n){
     set_order(n);
     setTimeout(()=>{
         dia(0);
-    }, 1000);
+    }, 1600);
 
 
     function dia(n){
