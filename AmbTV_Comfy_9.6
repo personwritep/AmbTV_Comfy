@@ -637,10 +637,14 @@ function player_env(){
             if(!check(next_p)){
                 if(n==0){
                     show_no(0);
-                    location.href=next_p; }
+                    setTimeout(()=>{
+                        location.href=next_p;
+                    }, 1000); }
                 else if(n==1){
                     show_no(1);
-                    location.href=next_p; }}
+                    setTimeout(()=>{
+                        location.href=next_p;
+                    }, 1000); }}
             else{
                 show_no(2); }
 
