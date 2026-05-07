@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.5
+// @version        9.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -646,6 +646,15 @@ function player_env(){
 
 
             function show_no(n){
+                let v_height=225;
+                let v_width=400;
+                let video=document.querySelector('.com-vod-VODScreen__player video'); // 🟨
+                if(video){
+                    v_height=getComputedStyle(video).height.replace('px', '')/2;
+                    v_width=getComputedStyle(video).width.replace('px', '')/2; }
+                let v_top=v_height;
+                let v_left=v_width - 120;
+
                 let show;
                 if(n==0){
                     show='<dialog class="s_no">◀ コンテンツを移動します'; }
@@ -654,10 +663,11 @@ function player_env(){
                 else if(n==2){
                     show='<dialog class="s_no">⛔ 次のコンテンツが見つかりません'; }
                 show+=
-                    '<style>.s_no { position: fixed; top: 20px; left: 240px; padding: 3px 6px 1px; '+
-                    'outline: none; border: 1px solid #000; border-radius: 4px; background: #fff; } '+
-                    '.s_no::backdrop { background: transparent; }'
-                '</style></dialog>';
+                    '<style>.s_no { position: fixed; top: '+ v_top +'px; left: '+ v_left +'px; '+
+                    'padding: 14px 20px 12px; font: normal 20px Meiryo; color: #fff; outline: none; '+
+                    'border: 1px solid #ccc; border-radius: 6px; background: #00000090; } '+
+                    '.s_no::backdrop { background: transparent; } '+
+                    '</style></dialog>';
                 if(!document.querySelector('.s_no')){
                     document.body.insertAdjacentHTML('beforeend', show); }
 
@@ -666,7 +676,8 @@ function player_env(){
                     s_no.showModal();
                     setTimeout(()=>{
                         s_no.remove();
-                    }, 1000); }} // show_no()
+                    }, 1000); }
+            } // show_no()
 
 
             function check(target_url){
