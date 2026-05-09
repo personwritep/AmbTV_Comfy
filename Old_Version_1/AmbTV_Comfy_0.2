@@ -1,0 +1,174 @@
+// ==UserScript==
+// @name         AmbTV Comfy
+// @namespace    http://tampermonkey.net/
+// @version      0.2
+// @description  AbemaTV ユーティリティ
+// @author       Ameba User
+// @match        https://abema.tv/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @grant        none
+// ==/UserScript==
+
+
+
+main();
+
+let target=document.querySelector('head > title');
+let monitor=new MutationObserver(main);
+monitor.observe(target, { childList: true });
+
+function main(){
+    let path=document.location.pathname;
+    if(path.match(/^\/video\/episode|^\/channels/)){
+
+        let nav_ul=document.querySelector('.com-m-BreadcrumbList');
+        if(nav_ul){
+            let sw=
+                '<span class="atv_sw">🔳</span>'+
+                '<style>.atv_sw { display: flex; align-items: center; '+
+                'padding: 0 0 2px 30px; cursor: pointer; }</style>';
+            if(!nav_ul.querySelector('.atv_sw')){
+                nav_ul.insertAdjacentHTML('beforeend', sw); }}
+
+        let atv_sw=document.querySelector('.atv_sw');
+        let atv_style=document.querySelector('.atv_style');
+        if(atv_sw && atv_style){
+            atv_sw.onclick=function(e){
+                e.preventDefault();
+                if(atv_style.disabled==false){
+                    atv_style.disabled=true; }
+                else{
+                    atv_style.disabled=false; }}}
+
+
+        let style=
+            '<style class="atv_style">'+
+            '.c-common-HeaderContainer-header, '+
+            '.c-application-SideNavigation, '+
+            '.c-application-SideNavigation--collapsed, '+
+            '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended '+
+            '{ display: none; } '+
+            '.com-vod-VODRecommendedContentsContainerView__details, '+
+            '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
+            '.com-feature-area-FeatureRecommendedArea__section, '+
+            '.c-video-EpisodeContainerView__page-bottom, '+
+            '.c-application-FooterContainer '+
+            '{ display: none; } '+
+            '.c-application-DesktopAppContainer__content-container '+
+            '{ align-items: center; height: 100vh; } '+
+            '.com-vod-VODResponsiveMainContent '+
+            '{ margin: 0 !important; padding: 0 !important; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player-and-details '+
+            '{ margin-right: 0 !important; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player '+
+            '{ margin: 0 6px !important; } '+
+            '.c-application-DesktopAppContainer__content '+
+            '{ min-width: 400px !important; } '+
+            '.com-vod-VODResponsiveMainContent '+
+            '{ --com-vod-VODResponsiveMainContent--content-min-width: 400 !important; } '+
+            '.com-vod-VODResponsiveMainContent__container { overflow: hidden; } '+
+            '.com-m-BreadcrumbList '+
+            '{ position: absolute; z-index: 15; width: 100%; padding-left: 15px; '+
+            'background: #000; opacity: 0; transition-delay: 1s; } '+
+            '.com-m-BreadcrumbList:hover { opacity: .8; transition: 0.5s; }'+
+            '</style>'+
+            '<style class="atv_style_basic">'+
+            '.com-vod-VODScreen-container { background: #000 !important; }'+
+            '</style>';
+
+        if(!document.querySelector('.atv_style')){
+            document.body.insertAdjacentHTML('beforeend', style);
+
+            let atv_style=document.querySelector('.atv_style');
+            if(atv_style){
+                atv_style.disabled=true; }}
+    }
+} // main()
+
+
+
+
+catch_click();
+
+function catch_click(){ // 動画のサムネイルの暗転拡大表示
+    let html_=document.querySelector('html');
+
+    box_env();
+
+    document.addEventListener('contextmenu', function(event){
+        if(!event.shiftKey && !event.ctrlKey){
+            event.preventDefault();
+            let elem=document.elementFromPoint(event.clientX, event.clientY);
+            let link_elem=elem.closest('a');
+
+            if(link_elem){
+                set_link(link_elem);
+                set_img(link_elem);
+                close(); }}});
+
+
+    function box_env(){
+        let lightbox=
+            '<div id="lightbox">'+
+            '<div id="photo_sw"><a id="photo_link">🎦 Movie Page</a></div>'+
+            '<img id="box_img">'+
+            '<style>'+
+            '@keyframes fadeIn { 0% {opacity: 0} 100% {opacity: 1}} '+
+            '.fin { animation: fadeIn .5s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '@keyframes fadeOut { 0% {opacity: 1} 100% {opacity: 0}} '+
+            '.fout { animation: fadeOut .2s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '#lightbox { position: fixed; top: 0; left: 0; z-index: 3000; visibility: hidden; '+
+            'background: black; width: 100vw; height: 100vh; text-align: center; } '+
+            '#photo_sw { position: absolute; width: 100%; height: 15%; } '+
+            '#photo_sw:hover #photo_link { opacity: 1; } '+
+            '#photo_link { position: absolute; top: 20px; left: 30px; text-decoration: none; '+
+            'font: bold 21px Meiryo; padding: 4px 12px 2px 10px; background: #fff; color: #000; '+
+            'border: 2px solid #000; border-radius: 6px; cursor: pointer; opacity: 0; } '+
+            '#box_img { width: 100vw; height: 100vh; padding: 2vh 2vw; object-fit: contain; } '+
+            '</style></div>';
+
+        if(!document.querySelector('#lightbox')){
+            document.body.insertAdjacentHTML('beforeend', lightbox); }}
+
+
+    function set_link(target){
+        let photo_link=document.querySelector('#photo_link');
+        if(photo_link){
+            let url=target.getAttribute('href');
+            if(url){
+                photo_link.setAttribute('href', url); }
+
+            photo_link.onclick=function(event){
+                event.stopImmediatePropagation(); }}}
+
+
+    function set_img(target){
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        let img=target.querySelector('img');
+        if(lightbox && box_img && img){
+            let img_url=img.getAttribute('src').replace(/%3Fversion%.*$/,"");
+            if(img_url){
+                box_img.src=img_url;
+                html_.style.overflow='hidden';
+                lightbox.style.visibility='visible';
+                lightbox.classList.remove('fout');
+                lightbox.classList.add('fin'); }}}
+
+
+    function close(){
+        let html_=document.querySelector('html');
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        if(lightbox){
+            lightbox.onclick=function(event){
+                event.preventDefault();
+                html_.style.overflow='inherit';
+                lightbox.classList.remove('fin');
+                lightbox.classList.add('fout');
+                setTimeout(()=>{
+                    lightbox.style.visibility='hidden';
+                    box_img.src='';
+                }, 200); }}}
+
+} // catch_click()
