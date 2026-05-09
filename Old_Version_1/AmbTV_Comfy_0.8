@@ -1,0 +1,269 @@
+// ==UserScript==
+// @name         AmbTV Comfy
+// @namespace    http://tampermonkey.net/
+// @version      0.8
+// @description  AbemaTV ユーティリティ
+// @author       Ameba User
+// @match        https://abema.tv/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @grant        none
+// ==/UserScript==
+
+
+
+main();
+
+let target=document.querySelector('head > title');
+let monitor=new MutationObserver(main);
+monitor.observe(target, { childList: true });
+
+function main(){
+
+    let retry=0;
+    let interval=setInterval(wait_target, 20);
+    function wait_target(){
+        retry++;
+        if(retry>100){ // リトライ制限 100回 2secまで
+            clearInterval(interval); }
+        let player=document.querySelector(
+            '.com-vod-VODRecommendedContentsContainerView__player');
+        if(player){
+            clearInterval(interval);
+            set_player(player); }}
+
+
+    function set_player(player){
+        let style=
+            '<style class="atv_style">'+
+            '.c-common-HeaderContainer-header, '+
+            '.c-application-SideNavigation, '+
+            '.c-application-SideNavigation--collapsed, '+
+            '.com-vod-VODRecommendedContentsContainerView__player-aside-recommended '+
+            '{ display: none !important; } '+
+            '.c-video-EpisodeContainerView-breadcrumb, '+
+            '.com-vod-VODRecommendedContentsContainerView__details, '+
+            '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
+            '.com-feature-area-FeatureRecommendedArea__section, '+
+            '.c-video-EpisodeContainerView__page-bottom, '+
+            '.c-application-FooterContainer '+
+            '{ display: none; } '+
+            '.c-application-DesktopAppContainer__content-container { '+
+            'align-items: center; height: 100vh; } '+
+            '.c-application-DesktopAppContainer__content { '+
+            'min-width: 400px !important; } '+
+            '.com-vod-VODResponsiveMainContent { '+
+            'margin: 0 !important; padding: 0 !important; '+
+            ' --com-vod-VODResponsiveMainContent--content-min-width: 500 !important; }'+
+            '.com-vod-VODRecommendedContentsContainerView__player-and-details '+
+            '{ margin-right: 0 !important; } '+
+            '.com-vod-VODRecommendedContentsContainerView__player '+
+            '{ margin: 0 6px !important; } '+
+            '.com-vod-VODMiniPlayerWrapper:before { display: none !important; } '+
+            '.com-vod-VODMiniPlayerWrapper__player--bg { display: none !important; } '+
+            '.com-vod-VODMiniPlayerWrapper__player { position: relative !important; } '+
+            '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
+            '.c-vod-EpisodePlayerContainer-wrapper { '+
+            'position: relative !important; height: calc(100vh - 12px) !important; } '+
+            '.com-vod-VODMiniPlayerWrapper__player--mini { height: 0 !important; } '+
+            '.com-vod-FullscreenInBrowserButton__screen-controller { display: none !important; } '+
+            '</style>'+
+            '<style class="atv_style_ex">'+
+            '.com-vod-VODScreen__player { '+
+            'height: 99% !important; width: 132% !important; margin-left: -16%; }'+
+            '</style>'+
+            '<style class="atv_style_basic">'+
+            '.com-vod-VODScreen-container { background: #000 !important; }'+
+            '</style>';
+
+        if(!player.querySelector('.atv_style')){
+            player.insertAdjacentHTML('beforeend', style);
+
+            let atv_style=player.querySelector('.atv_style');
+            if(atv_style){
+                atv_style.disabled=true; }
+
+            let atv_style_ex=player.querySelector('.atv_style_ex');
+            if(atv_style_ex){
+                atv_style_ex.disabled=true; }}
+
+
+        let wrap=player.querySelector('.c-vod-EpisodePlayerContainer-wrapper');
+        if(wrap){
+            let monitor1=new MutationObserver(play);
+            monitor1.observe(wrap, { childList: true }); }
+
+        setTimeout(()=>{
+            let wrap_tv=player.querySelector('.c-tv-TimeshiftPlayerContainerView');
+            if(wrap_tv){
+                let monitor2=new MutationObserver(play);
+                monitor2.observe(wrap_tv, { childList: true }); }
+        }, 1000);
+
+
+        setTimeout(()=>{
+            let ec_thumbnail=
+                document.querySelector('.c-vod-EpisodePlayerContainer-thumbnail');
+            if(ec_thumbnail){
+                reset_subw(); } // プレミアムAD表示時に「サブウインドウ表示」をリセット
+        }, 200);
+
+    } // set_player()
+
+
+
+    function play(){
+        let nav_b=document.querySelector(
+            '.com-vod-VideoControlBar__playback-rate');
+        if(nav_b){
+            let sw=
+                '<button type="button" class="atv_sw com-vod-FullscreenButton">'+
+                '<div class="com-vod-FullscreenButton__tooltip">'+
+                '<div class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
+                '</div></div>'+
+                '<span class="atv_icon">🔳</span></button>'+
+                '<style>.atv_icon { padding: 0 0 2px; '+
+                'filter: drop-shadow(2px 2px 0 #fff); } '+
+                ':fullscreen .atv_sw { display: none; }</style>';
+
+            if(!document.querySelector('.atv_sw')){
+                nav_b.insertAdjacentHTML('afterend', sw); }
+
+            let atv_sw=document.querySelector('.atv_sw');
+            let atv_style=document.querySelector('.atv_style');
+            let atv_tp=document.querySelector('.atv_tp');
+            if(atv_sw && atv_style && atv_tp){
+                if(atv_style.disabled==false){
+                    atv_tp.textContent='デフォルト表示'; }
+                else{
+                    atv_tp.textContent='サブウインドウ表示'; }
+
+                atv_sw.onclick=function(e){
+                    e.preventDefault();
+                    if(atv_style.disabled==false){
+                        atv_style.disabled=true;
+                        atv_tp.textContent='サブウインドウ表示'; }
+                    else{
+                        atv_style.disabled=false;
+                        atv_tp.textContent='デフォルト表示'; }
+
+                }}}
+
+        ex_view();
+
+    } // play()
+
+
+
+    function reset_subw(){
+        let atv_style=document.querySelector('.atv_style');
+        if(atv_style){
+            if(atv_style.disabled==false){
+                atv_style.disabled=true; }}}
+
+
+    function ex_view(){
+        let full=document.querySelector('.com-vod-FullscreenButton__icon');
+        let atv_style_ex=document.querySelector('.atv_style_ex');
+        if(full && atv_style_ex){
+            full.onclick=(event)=>{
+                if(event.ctrlKey){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    if(atv_style_ex.disabled==true){
+                        atv_style_ex.disabled=false;
+                        full.style.color='red'; }
+                    else{
+                        atv_style_ex.disabled=true;
+                        full.style.color='#fff';}
+                }}}}
+
+} // main()
+
+
+
+
+catch_click();
+
+function catch_click(){ // 動画のサムネイルの暗転拡大表示
+    let html_=document.querySelector('html');
+
+    box_env();
+
+    document.addEventListener('contextmenu', function(event){
+        if(!event.shiftKey && !event.ctrlKey){
+            event.preventDefault();
+            let elem=document.elementFromPoint(event.clientX, event.clientY);
+            let link_elem=elem.closest('a');
+
+            if(link_elem){
+                set_link(link_elem);
+                set_img(link_elem);
+                close(); }}});
+
+
+    function box_env(){
+        let lightbox=
+            '<div id="lightbox">'+
+            '<div id="photo_sw"><a id="photo_link">🎦 Movie Page</a></div>'+
+            '<img id="box_img">'+
+            '<style>'+
+            '@keyframes fadeIn { 0% {opacity: 0} 100% {opacity: 1}} '+
+            '.fin { animation: fadeIn .5s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '@keyframes fadeOut { 0% {opacity: 1} 100% {opacity: 0}} '+
+            '.fout { animation: fadeOut .2s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '#lightbox { position: fixed; top: 0; left: 0; z-index: 3000; visibility: hidden; '+
+            'background: black; width: 100vw; height: 100vh; text-align: center; } '+
+            '#photo_sw { position: absolute; width: 100%; height: 15%; } '+
+            '#photo_sw:hover #photo_link { opacity: 1; } '+
+            '#photo_link { font: bold 21px Meiryo; position: absolute; top: 20px; left: 30px; '+
+            'padding: 4px 12px 2px 10px; color: #000; background: #fff; cursor: pointer; '+
+            'border: 2px solid #000; border-radius: 6px; text-decoration: none; opacity: 0; } '+
+            '#box_img { width: 100vw; height: 100vh; padding: 2vh 2vw; '+
+            'object-fit: contain; } '+
+            '</style></div>';
+
+        if(!document.querySelector('#lightbox')){
+            document.body.insertAdjacentHTML('beforeend', lightbox); }}
+
+
+    function set_link(target){
+        let photo_link=document.querySelector('#photo_link');
+        if(photo_link){
+            let url=target.getAttribute('href');
+            if(url){
+                photo_link.setAttribute('href', url); }
+
+            photo_link.onclick=function(event){
+                event.stopImmediatePropagation(); }}}
+
+
+    function set_img(target){
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        let img=target.querySelector('img');
+        if(lightbox && box_img && img){
+            let img_url=img.getAttribute('src').replace(/%3Fversion%.*$/,"");
+            if(img_url){
+                box_img.src=img_url;
+                html_.style.overflow='hidden';
+                lightbox.style.visibility='visible';
+                lightbox.classList.remove('fout');
+                lightbox.classList.add('fin'); }}}
+
+
+    function close(){
+        let html_=document.querySelector('html');
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        if(lightbox){
+            lightbox.onclick=function(event){
+                event.preventDefault();
+                html_.style.overflow='inherit';
+                lightbox.classList.remove('fin');
+                lightbox.classList.add('fout');
+                setTimeout(()=>{
+                    lightbox.style.visibility='hidden';
+                    box_img.src='';
+                }, 200); }}}
+
+} // catch_click()
