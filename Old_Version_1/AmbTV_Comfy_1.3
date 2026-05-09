@@ -1,0 +1,513 @@
+// ==UserScript=>
+// @name         AmbTV Comfy
+// @namespace    http://tampermonkey.net/
+// @version      1.3
+// @description  AbemaTV ユーティリティ
+// @author       Ameba User
+// @match        https://abema.tv/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @grant        none
+// ==/UserScript==
+
+
+main();
+
+let target=document.querySelector('head > title');
+let monitor=new MutationObserver(main);
+monitor.observe(target, { childList: true });
+
+
+function main(){
+
+    let retry=0;
+    let interval=setInterval(wait_target, 20);
+    function wait_target(){
+        retry++;
+        if(retry>100){ // リトライ制限 100回 2secまで
+            clearInterval(interval); }
+        let player=document.querySelector(
+            '.com-vod-VODRecommendedContentsContainerView__player');
+        if(player){
+            clearInterval(interval);
+            set_player(player); }}
+
+
+    function set_player(player){
+        if(document.body.classList.contains('if_movie')){ // 音声抑止のclass
+            mute(player, 0); }
+        else{
+            mute(player, 1);
+
+            let style=
+                '<style class="atv_style">'+
+                '.c-common-HeaderContainer-header, '+
+                '.c-application-SideNavigation, '+
+                '.c-application-SideNavigation--collapsed, '+
+                '.com-vod-VODRecommendedContentsContainerView'+
+                '__player-aside-recommended { display: none !important; } '+
+                '.c-video-EpisodeContainerView-breadcrumb, '+
+                '.com-vod-VODRecommendedContentsContainerView__details, '+
+                '.com-vod-VODRecommendedContentsContainerView__episode-list, '+
+                '.com-feature-area-FeatureRecommendedArea__section, '+
+                '.c-video-EpisodeContainerView__page-bottom, '+
+                '.c-application-FooterContainer '+
+                '{ display: none; } '+
+                '.c-application-DesktopAppContainer__content-container { '+
+                'align-items: center; height: 100vh; } '+
+                '.c-application-DesktopAppContainer__content { '+
+                'min-width: 400px !important; } '+
+                '.com-vod-VODResponsiveMainContent { '+
+                'margin: 0 !important; padding: 0 !important; '+
+                ' --com-vod-VODResponsiveMainContent--content-min-width: 500 !important; }'+
+                '.com-vod-VODRecommendedContentsContainerView__player-and-details '+
+                '{ margin-right: 0 !important; } '+
+                '.com-vod-VODRecommendedContentsContainerView__player '+
+                '{ margin: 0 6px !important; } '+
+                '.com-vod-VODMiniPlayerWrapper:before { display: none !important; } '+
+                '.com-vod-VODMiniPlayerWrapper__player--bg { display: none !important; } '+
+                '.com-vod-VODMiniPlayerWrapper__player { position: relative !important; } '+
+                '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
+                '.c-vod-EpisodePlayerContainer-wrapper { '+
+                'position: relative !important; height: calc(100vh - 12px) !important; } '+
+                '.com-vod-VODMiniPlayerWrapper__player--mini { height: 0 !important; } '+
+                '.com-vod-FullscreenInBrowserButton__screen-controller { '+
+                'display: none !important; } '+
+                '</style>'+
+                '<style class="atv_style_ex">'+
+                '.com-vod-VODScreen__player { '+
+                'height: 99% !important; width: 132% !important; margin-left: -16%; }'+
+                '</style>'+
+                '<style class="atv_style_basic">'+
+                '.com-vod-VODScreen-container { background: #000 !important; }'+
+                '.com-playback-SeekBar__highlighter, .com-playback-SeekBar__marker, '+
+                '.com-a-Slider__highlighter { background-color: #2196f3 !important; }'+
+                '</style>';
+
+            if(!player.querySelector('.atv_style')){
+                player.insertAdjacentHTML('beforeend', style);
+
+                let atv_style=player.querySelector('.atv_style');
+                if(atv_style){
+                    atv_style.disabled=true; }
+
+                let atv_style_ex=player.querySelector('.atv_style_ex');
+                if(atv_style_ex){
+                    atv_style_ex.disabled=true; }}
+
+
+            let wrap=player.querySelector('.c-vod-EpisodePlayerContainer-wrapper');
+            if(wrap){
+                let monitor1=new MutationObserver(play);
+                monitor1.observe(wrap, { childList: true }); }
+
+            setTimeout(()=>{
+                let wrap_tv=player.querySelector('.c-tv-TimeshiftPlayerContainerView');
+                if(wrap_tv){
+                    let monitor2=new MutationObserver(play);
+                    monitor2.observe(wrap_tv, { childList: true }); }
+            }, 1000);
+
+
+            setTimeout(()=>{
+                let ec_thumbnail=
+                    document.querySelector('.c-vod-EpisodePlayerContainer-thumbnail');
+                if(ec_thumbnail){
+                    reset_subw(); } // プレミアムAD表示時に「サブウインドウ表示」をリセット
+            }, 200);
+        }
+
+
+        function mute(player, n){
+            setTimeout(()=>{
+                let vol=player.querySelector('.com-playback-Volume__icon-button');
+                if(vol){
+                    if(n==0){
+                        if(vol.getAttribute('aria-label')=="音声をオフにする"){
+                            vol.click(); }}
+                    else{
+                        if(vol.getAttribute('aria-label')=="音声をオンにする"){
+                            vol.click(); }}}
+            }, 400); }
+
+    } // set_player()
+
+
+
+    function play(){
+        let nav_b=document.querySelector(
+            '.com-vod-VideoControlBar__playback-rate');
+
+        if(nav_b){
+            let help=
+                '<svg class="atv_help" viewBox="0 0 150 150">'+
+                '<path  fill="#fff" d="M66 13C56 15 47 18 39 24C-12 60 18 146 82 137C92 '+
+                '135 102 131 110 126C162 90 128 4 66 13M68 25C131 17 145 117 81 '+
+                '125C16 133 3 34 68 25M69 40C61 41 39 58 58 61C66 63 73 47 82 57C84 '+
+                '60 83 62 81 65C77 70 52 90 76 89C82 89 82 84 86 81C92 76 98 74 100 66'+
+                'C105 48 84 37 69 40M70 94C58 99 66 118 78 112C90 107 82 89 70 94z">'+
+                '</path></svg>'+
+                '<style>.atv_help { width: 20px; margin: 0px 16px 0; cursor: pointer; '+
+                'display: none; }</style>';
+
+            if(!document.querySelector('.atv_help')){
+                nav_b.insertAdjacentHTML('beforebegin', help); }
+
+            let atv_help=document.querySelector('.atv_help');
+            if(atv_help){
+                atv_help.onclick=(event)=>{
+                    event.stopImmediatePropagation();
+                    let url='https://ameblo.jp/personwritep/entry-12800867556.html'
+                    window.open( url, null, '_blank'); }}
+
+            let sw=
+                '<button type="button" class="atv_sw com-vod-FullscreenButton">'+
+                '<div class="com-vod-FullscreenButton__tooltip">'+
+                '<div class="atv_tp com-a-Tooltip com-a-Tooltip--arrow-position-center">'+
+                '</div></div>'+
+                '<span class="atv_icon">🔳</span></button>'+
+                '<style>.atv_icon { padding: 0 0 2px; filter: drop-shadow(2px 2px 0 #fff); } '+
+                ':fullscreen .atv_sw { display: none; }</style>';
+
+            if(!document.querySelector('.atv_sw')){
+                nav_b.insertAdjacentHTML('afterend', sw); }
+
+            let atv_sw=document.querySelector('.atv_sw');
+            let atv_style=document.querySelector('.atv_style');
+            let atv_tp=document.querySelector('.atv_tp');
+            if(atv_sw && atv_style && atv_tp && atv_help){
+                if(atv_style.disabled==false){
+                    atv_tp.textContent='デフォルト表示';
+                    atv_help.style.display='block'; }
+                else{
+                    atv_tp.textContent='サブウインドウ表示';
+                    atv_help.style.display='none'; }
+
+                atv_sw.onclick=function(e){
+                    e.preventDefault();
+                    if(atv_style.disabled==false){
+                        atv_style.disabled=true;
+                        atv_tp.textContent='サブウインドウ表示';
+                        atv_help.style.display='none'; }
+                    else{
+                        atv_style.disabled=false;
+                        atv_tp.textContent='デフォルト表示';
+                        atv_help.style.display='block'; }}
+            }}
+
+        ex_view();
+
+    } // play()
+
+
+
+    function reset_subw(){
+        let atv_style=document.querySelector('.atv_style');
+        if(atv_style){
+            if(atv_style.disabled==false){
+                atv_style.disabled=true; }}}
+
+
+    function ex_view(){
+        let full=document.querySelector('.com-vod-FullscreenButton__icon');
+        let atv_style_ex=document.querySelector('.atv_style_ex');
+        if(full && atv_style_ex){
+            full.onclick=(event)=>{
+                if(event.ctrlKey){
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    if(atv_style_ex.disabled==true){
+                        atv_style_ex.disabled=false;
+                        full.style.color='red'; }
+                    else{
+                        atv_style_ex.disabled=true;
+                        full.style.color='#fff';}
+                }}}}
+
+} // main()
+
+
+
+
+catch_click();
+
+function catch_click(){ // 動画のサムネイルの暗転拡大表示
+    let html_=document.documentElement;
+
+    box_env();
+
+    document.addEventListener('contextmenu', function(event){
+        if(!event.shiftKey && !event.ctrlKey){
+            event.preventDefault();
+            let elem=document.elementFromPoint(event.clientX, event.clientY);
+            let link_elem=elem.closest('a');
+
+            if(link_elem){
+                set_link(link_elem);
+                set_img(link_elem);
+                close(); }}});
+
+
+    document.addEventListener('click', function(event){
+        if(event.ctrlKey){
+            event.preventDefault(); }});
+
+
+    document.addEventListener('mouseup', function(event){
+        let elem=document.elementFromPoint(event.clientX, event.clientY);
+        let link_elem=elem.closest('a');
+        if(link_elem){
+            if(event.ctrlKey){
+                set_if(link_elem); }
+            else{
+                setTimeout(()=>{
+                    if_close(); }, 1000); }}});
+
+
+    function box_env(){
+        let lightbox=
+            '<div id="lightbox">'+
+            '<div id="photo_sw"><a id="photo_link">🎦 Movie Page</a></div>'+
+            '<img id="box_img">'+
+            '<style>'+
+            '@keyframes fadeIn { 0% {opacity: 0} 100% {opacity: 1}} '+
+            '.fin { animation: fadeIn .5s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '@keyframes fadeOut { 0% {opacity: 1} 100% {opacity: 0}} '+
+            '.fout { animation: fadeOut .2s ease 0s 1 normal; animation-fill-mode: both; } '+
+            '#lightbox { position: fixed; top: 0; left: 0; z-index: 3000; visibility: hidden; '+
+            'background: black; width: 100vw; height: 100vh; text-align: center; } '+
+            '#photo_sw { position: absolute; width: 100%; height: 15%; } '+
+            '#photo_sw:hover #photo_link { opacity: 1; } '+
+            '#photo_link { font: bold 21px Meiryo; position: absolute; top: 20px; left: 30px; '+
+            'padding: 4px 12px 2px 10px; color: #000; background: #fff; cursor: pointer; '+
+            'border: 2px solid #000; border-radius: 6px; text-decoration: none; opacity: 0; } '+
+            '#box_img { width: 100vw; height: 100vh; padding: 2vh 2vw; '+
+            'object-fit: contain; } '+
+            '.com-home-ChannelCardLinksPanel { '+
+            'grid-template-columns: repeat(auto-fill,minmax(120px,1fr)); } '+
+            '.com-home-ChannelCardLink__play, '+
+            '.com-home-ChannelListReorderButton { font-size: 20px; } '+
+            '</style></div>';
+
+        if(!document.querySelector('#lightbox')){
+            document.body.insertAdjacentHTML('beforeend', lightbox); }}
+
+
+    function set_link(target){
+        let photo_link=document.querySelector('#photo_link');
+        if(photo_link){
+            let url=target.getAttribute('href');
+            if(url){
+                photo_link.setAttribute('href', url); }
+
+            photo_link.onclick=function(event){
+                event.stopImmediatePropagation(); }}}
+
+
+    function set_img(target){
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        let img=target.querySelector('img');
+        if(lightbox && box_img && img){
+            let img_url=img.getAttribute('src').replace(/%3Fversion%.*$/,"");
+            if(img_url){
+                box_img.src=img_url;
+                html_.style.overflow='hidden';
+                lightbox.style.visibility='visible';
+                lightbox.classList.remove('fout');
+                lightbox.classList.add('fin'); }}}
+
+
+    function close(){
+        let html_=document.querySelector('html');
+        let lightbox=document.querySelector('#lightbox');
+        let box_img=lightbox.querySelector('#box_img');
+        if(lightbox){
+            lightbox.onclick=function(event){
+                event.preventDefault();
+                html_.style.overflow='inherit';
+                lightbox.classList.remove('fin');
+                lightbox.classList.add('fout');
+                setTimeout(()=>{
+                    lightbox.style.visibility='hidden';
+                    box_img.src='';
+                }, 200); }}}
+
+
+
+
+    function set_if(target){
+        outline_off();
+        let Card=target.closest('.com-feature-area-CardItem');
+        if(Card){
+            if(!Card.closest('.c-home-HomeContainerView-TvAreaContainer')){
+                Card.style.outline='2px solid #fff'; }}
+
+        let Ranking=target.closest('.com-feature-area-FeatureRankingItem');
+        if(Ranking){
+            Ranking.style.outline='2px solid #fff'; }
+
+
+
+        let url=target.getAttribute('href');
+
+        if(url.includes('/video/episode/') || url.includes('/video/title/') ||
+           url.includes('/channels/') || url.includes('/live-event/')){
+
+            let home_SVG=
+                '<svg  width="30" height="30" viewBox="0 -5 83 83" '+
+                'style="vertical-align: -5px">'+
+                '<path style="fill: #fff" d="M31 52L53 52L53 66L53 6'+
+                '8L53 70L53.3 72L53.7 72.9L55.1 74.3L56 74.7L57 74.9L58 75L60'+
+                ' 75L64 75L66 75L67 75L68 75L70 74.9L71.9 74.3L73.3 72.9L73.7'+
+                ' 72L73.9 71L74 69L74 67L74 63L74 43L74 40L74 38L73.9 36L73.3'+
+                ' 34L71.9 32.1L71 31.2L69 29.6L67 28.1L65 26.6L64 25.9L63 25.'+
+                '1L61 23.6L60 22.8L58 21.2L57 20.4L55 18.9L54 18.1L53 17.4L52'+
+                ' 16.6L51 15.9L50 15.1L48 13.7L46 12.4L44 11.5L43 11.3L42 11.'+
+                '2L41 11.3L40 11.5L38 12.4L36 13.7L34 15.1L33 15.9L32 16.6L31'+
+                ' 17.4L29 18.9L28 19.6L27 20.4L26 21.1L25 21.9L23 23.4L22 24.'+
+                '2L20 25.8L19 26.6L17 28.1L16 28.9L15 29.6L13 31.2L12.1 32.1L'+
+                '10.7 34L10.1 36L10 38L10 39L10 41L10 56L10 64L10 67L10 68L10'+
+                ' 69L10.1 71L10.7 72.9L11.3 73.7L12.1 74.3L13 74.7L15 75L17 7'+
+                '5L20 75L23 75L25 75L27 74.9L28 74.7L28.9 74.3L29.7 73.7L30.3'+
+                ' 72.9L30.9 71L31 69L31 68L31 66L31 63L31 52z"></path>'+
+                '</svg>';
+
+            let mov_SVG=
+                '<svg width="26" height="30" viewBox="0 -5 83 83" '+
+                'style="vertical-align: -5px">'+
+                '<path style="fill: #fff" d="M18 49C12 43 9 41 1 41L'+
+                '1 73C9 73 12 71 18 65L18 79L72 79L72 54C72 50 71 45 72 41C73'+
+                ' 38 76 37 77 35C80 32 82 27 82 23C81 13 73 5 63 6C48 8 40 30'+
+                ' 55 37C49 39 42 38 35 38C38 36 40 33 41 30C49 10 19 -3 10 16'+
+                'C9 18 8 21 8 23C8 31 13 33 17 39C19 42 18 46 18 49z"></path>'+
+                '</svg>';
+
+            let cross_SVG=
+                '<svg width="24" height="30" viewBox="0 0 83 83" '+
+                'style="vertical-align: -5px">'+
+                '<path style="fill: #fff" d="M30 43C25.7 47.3 21.3 5'+
+                '1.6 17 56C14.8 58.2 12.1 60.8 11.5 64C10.7 69.2 16.9 74.8 22'+
+                ' 73.2C29 71 36.9 60.8 41 55C45.3 59.3 49.6 63.7 54 68C56.2 7'+
+                '0.2 58.8 72.9 62 73.5C67.2 74.3 72.8 68.1 71.2 63C69 56 58.8'+
+                ' 48.1 53 44C57.3 39.7 61.7 35.4 66 31C68.2 28.8 70.9 26.2 71'+
+                '.5 23C72.3 17.8 66.1 12.2 61 13.8C54 16 46.1 26.2 42 32C37.7'+
+                ' 27.7 33.4 23.3 29 19C26.8 16.8 24.2 14.1 21 13.5C15.8 12.7 '+
+                '10.2 18.9 11.8 24C14 31 24.2 38.9 30 43z"></path>'+
+                '</svg>';
+
+            let if_elem=
+                '<div id="if_wrap">'+
+                '<div id="if_cont">'+
+                '<a class="if_link" href="https://abema.tv/">'+ home_SVG +
+                '<span class="t"> Abema Home</span></a>'+
+                '<a class="mov_link">'+ mov_SVG +
+                '<span class="t"> Movie Page</span></a>'+
+                '<span class="if_close">'+ cross_SVG +'</span>'+
+                '</div>'+
+                '<iframe id="notify" scrolling="no" src="'+ url +'"></iframe>'+
+                '<style>#if_wrap { position: fixed; z-index: 20; top: 0; left: 0; width: 480px; '+
+                'height: calc(100% - 22px); border: 2px solid #fff; background: #000; } '+
+                '#if_cont { display: flex; justify-content: space-between; align-items: center; '+
+                'color: #fff; height: 40px; padding: 0 30px; background: #a7b8c4; } '+
+                '.if_link, .mov_link, .if_close { text-decoration: none; cursor: pointer; } '+
+                '.t { font: 20px Meiryo; } '+
+                '.if_close { padding: 2px 10px 0; margin: 0 -10px 0 -20px; } '+
+                '#notify { padding: 0; width: 100%; height: calc(100% - 40px); } '+
+                '.c-application-SideNavigation { width: 480px; }'+
+                '</style></div>';
+
+            if(document.querySelector('#if_wrap')){
+                document.querySelector('#if_wrap').remove(); }
+            document.body.insertAdjacentHTML('beforeend', if_elem);
+
+
+            let notify=document.querySelector('#notify');
+            notify.onload=()=>{
+                let if_body=notify.contentWindow.document.body;
+                if(if_body){
+                    set_iframe(if_body); }}
+
+
+            function set_iframe(if_body){
+                if_body.setAttribute('class', 'if_movie'); // 音声抑止のclass設定
+                let in_style=
+                    '<style class="in_style">'+
+                    '.com-content-list-ContentList, '+
+                    '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
+                    'position: fixed; top: 0; left: 0; z-index: 20; width: 476px; '+
+                    'height: 100%; overflow-y: scroll; overflow-x: hidden; background: #000; } '+
+                    '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
+                    'top: 15px; margin-left: 8px; } '+
+                    '.com-content-list-ContentListEpisodeItem { overflow: hidden; padding: 8px; } '+
+                    '.com-vod-VODLabel__text--free { box-shadow: 0 0 0 600px #144f7a; } '+
+                    '.com-content-list-ContentListEpisodeItem-ContentListEpisodeItemOverview'+
+                    '__supplement, .com-content-list-ContentListEpisodeItem__description { '+
+                    'color: #ddd; position: relative; } '+
+                    '.com-vod-VodExpiredDateText-ExpiredDateText__text--info { color: #fff; }'+
+                    '.com-content-list-ContentListEpisodeItem__my-list-button { '+
+                    'margin-left: 0; width: 24px; } '+
+                    '.com-m-NotificationManager { width: 290px; } '+
+                    '.com-application-NotificationToast { '+
+                    'gap: 0; height: 50px; padding: 0 10px 0 25px; } '+
+                    '.com-application-NotificationToast__button-wrapper { display: none; } '+
+                    '</style>';
+
+                if_body.insertAdjacentHTML('beforeend', in_style);
+
+
+                let links=if_body.querySelectorAll('.com-content-list-ContentListItem a');
+                for(let k=0; k<links.length; k++){
+                    links[k].onmousedown=(event)=>{
+                        if(!event.ctrlKey){
+                            let url=links[k].getAttribute('href');
+                            if(url){
+                                location.href=url; }}}}
+
+
+                let mov_l=document.querySelector('.mov_link');
+                if(mov_l){
+                    mov_l.onclick=()=>{
+                        let link=if_body.querySelector('.com-content-list-ContentListItem a');
+                        let m_url=link.getAttribute('href');
+                        if(m_url){
+                            location.href=m_url; }}}
+
+            } // set_iframe()
+        }
+
+        else{ // "/video/episode/" "/video/title/" "/channels/" "/live-event/" 以外のリンクの場合
+            if_close(); }
+
+
+        let close_button=document.querySelector('.if_close');
+        if(close_button){
+            close_button.onclick=()=>{
+                outline_off();
+                if_close(); }}
+
+    } //set_if()
+
+
+
+    function outline_off(){
+        let cards=document.querySelectorAll('.com-feature-area-CardItem');
+        for(let k=0; k<cards.length; k++){
+            let style=window.getComputedStyle(cards[k]);
+            let out=style.getPropertyValue('outline-width');
+            if(out='2px'){
+                cards[k].style.outline=''; }}
+
+        let rankings=document.querySelectorAll('.com-feature-area-FeatureRankingItem');
+        for(let k=0; k<rankings.length; k++){
+            let style=window.getComputedStyle(rankings[k]);
+            let out=style.getPropertyValue('outline-width');
+            if(out='2px'){
+                rankings[k].style.outline=''; }}}
+
+
+    function if_close(){
+        if(document.querySelector('#if_wrap')){
+            document.querySelector('#if_wrap').remove(); }}
+
+
+} // catch_click()
