@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.7
+// @version        9.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -142,6 +142,7 @@ function player_env(){
 
         if(!player.querySelector('.atv_style')){
             player.insertAdjacentHTML('beforeend', style); }
+
 
         if(sessionStorage.getItem('AmbTV_S')!='1'){
             set_subw(0); } // 🟦 通常表示
@@ -326,7 +327,6 @@ function player_env(){
         set_mode_button();
         set_mode_key();
         reset_mute();
-        full_sub_cont(cont_r);
         ex_view();
         end_roll();
 
@@ -339,14 +339,12 @@ function player_env(){
         let atv_tp=document.querySelector('.atv_tp');
         if(atv_sw && atv_tp){
             if(sessionStorage.getItem('AmbTV_S')=='1'){
-                set_subw(1); // 🟦 サブウインドウ表示
                 atv_tp.textContent='デフォルト表示'; }
             else{
-                set_subw(0); // 🟦 通常表示
                 atv_tp.textContent='サブウインドウ表示'; }
 
-            atv_sw.onclick=function(e){
-                e.preventDefault();
+            atv_sw.onclick=function(event){
+                event.preventDefault();
                 if(sessionStorage.getItem('AmbTV_S')=='1'){
                     set_subw(0); // 🟦 通常表示
                     atv_tp.textContent='サブウインドウ表示'; }
@@ -362,16 +360,19 @@ function player_env(){
         document.addEventListener('keydown', function(event){
             if(event.keyCode==27){ //「ESC」キー
                 set_subw(0); // 🟦 通常表示
-                hide_cont(0); } // 🟩 コントロール表示
+                hide_cont(0); // 🟩 コントロール表示
+                set_mode_button(); }
             else if(event.keyCode==121){ //「F10」キー
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 if(sessionStorage.getItem('AmbTV_S')!='1'){
                     set_subw(1); // 🟦 サブウインドウ表示
-                    hide_cont(1); } // 🟩 コントロールを非表示
+                    hide_cont(1); // 🟩 コントロールを非表示
+                    set_mode_button(); }
                 else{
                     set_subw(0); // 🟦 通常表示
-                    hide_cont(0); }} // 🟩 コントロール表示
+                    hide_cont(0); // 🟩 コントロール表示
+                    set_mode_button(); }}
         });
 
     } // set_mode_key()
@@ -389,27 +390,6 @@ function player_env(){
                 localStorage.setItem('AmbTV_V', setVolume); }); }
 
     } // reset_mute()
-
-
-
-    function full_sub_cont(cont_r){ // フルスクリーン表示でサブウインド表示をリセット
-        if(cont_r){
-            let atv_tp=document.querySelector('.atv_tp');
-            let buttons=cont_r.querySelectorAll('.com-vod-VODScreen__button');
-            let full_sw=buttons[buttons.length-1];
-            if(full_sw){
-                let ues=full_sw.querySelector('use');
-                if(ues){
-                    let monitor2=new MutationObserver(sw_cont);
-                    monitor2.observe(ues, { attributes: true });
-                    function sw_cont(){
-                        setTimeout(()=>{
-                            if(sessionStorage.getItem('AmbTV_S')=='1'){
-                                set_subw(0); // 🟦 通常表示
-                                atv_tp.textContent='サブウインドウ表示'; }
-                        }, 100); }}}}
-
-    } // set_fullscreen_button(cont_r)
 
 
 
@@ -634,19 +614,20 @@ function player_env(){
 
 
             player.onwheel=function(event){ // マスウホイールで設定
-                if(!event.ctrlKey && !event.shiftKey){
-                    if(event.deltaY>0){ //「wheel ⇧」 10sec後へジャンプ　🔵
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
-                        video_elem.currentTime -=10;
-                        if(video_elem.paused==false){
-                            video_elem.play(); }}
-                    if(event.deltaY<0){ //「wheel ⇩」 10sec前へジャンプ　🔵
-                        event.preventDefault();
-                        event.stopImmediatePropagation();
-                        video_elem.currentTime +=10;
-                        if(video_elem.paused==false){
-                            video_elem.play(); }}}}
+                if(sessionStorage.getItem('AmbTV_S')=='1' || document.fullscreenElement===player){
+                    if(!event.ctrlKey && !event.shiftKey){
+                        if(event.deltaY>0){ //「wheel ⇧」 10sec後へジャンプ　🔵
+                            event.preventDefault();
+                            event.stopImmediatePropagation();
+                            video_elem.currentTime -=10;
+                            if(video_elem.paused==false){
+                                video_elem.play(); }}
+                        if(event.deltaY<0){ //「wheel ⇩」 10sec前へジャンプ　🔵
+                            event.preventDefault();
+                            event.stopImmediatePropagation();
+                            video_elem.currentTime +=10;
+                            if(video_elem.paused==false){
+                                video_elem.play(); }}}}}
 
         } // if(video_elem)
 
@@ -674,10 +655,14 @@ function player_env(){
             if(!check(next_p)){
                 if(n==0){
                     show_no(0);
-                    location.href=next_p; }
+                    setTimeout(()=>{
+                        location.href=next_p;
+                    }, 1000); }
                 else if(n==1){
                     show_no(1);
-                    location.href=next_p; }}
+                    setTimeout(()=>{
+                        location.href=next_p;
+                    }, 1000); }}
             else{
                 show_no(2); }
 
