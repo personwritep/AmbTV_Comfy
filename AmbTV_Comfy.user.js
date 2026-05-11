@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.8
+// @version        9.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -104,8 +104,11 @@ function player_env(){
 
             // BreadcrumbList
             '.com-m-BreadcrumbList { position: absolute; '+
-            'top: 20px; left: 50px; z-index: 30; font-size: 20px; padding: 14px 20px; '+
+            'top: 20px; left: 50px; z-index: 15; font-size: 20px; padding: 14px 20px; '+
             'border: 1px solid #ccc; border-radius: 6px; background: #00000090; } '+
+            '.com-m-BreadcrumbList__item:nth-last-child(n+3) { display: none; } '+
+            '.com-m-BreadcrumbList__item:nth-last-child(2) .com-m-BreadcrumbList__arrow { '+
+            ' display: none; } '+
             '.com-m-BreadcrumbList__item:last-child span { color: #fff !important; } '+
             '</style>'+
 
