@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        9.9
+// @version        10.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -763,9 +763,9 @@ function player_env(){
 function sort_and_free(n){
     let style=
         '<style class="sort_style">'+
-        '.com-contentlist-ContentlistSortSettingsButton__icon { '+
+        '.com-contentlist-DisplaySettingsButton__icon { '+
         'border: 1px solid #aaa; border-radius: 4px; } '+
-        '.com-contentlist-ContentlistSortSettingsButton__text { display: none; } '+
+        '.com-contentlist-DisplaySettingsButton__text { display: none; } '+
 
         '.com-contentlist-ContentlistSection__header { display: none; } '+ // 🟠 プレミアリスト区分
         '.com-contentlist-ContentlistSection--subscription-premium { background: none; } '+
@@ -841,16 +841,12 @@ function set_order(n){
 
 
     function d_order(){ // 配信リストの降順化
-        let s_but=document.querySelector('.com-contentlist-ContentlistSortSettingsButton');
+        let s_but=document.querySelector('.com-contentlist-DisplaySettingsButton');
         if(s_but){
             s_but.click();
 
             let order=document.querySelectorAll('button[class$="SettingsMenu__order-item"]')[1];
             if(order){
-                let toggle=document.querySelector('.com-a-ToggleSwitch__input');
-                if(toggle && toggle.checked==false){
-                    toggle.click(); }
-
                 if(order.ariaPressed=="false"){
                     order.click(); }
 
@@ -1184,7 +1180,6 @@ function set_iframe(){
         '.com-vod-VODRecommendedContentsContainerView__player-and-details { '+
         'padding: 44px 0 0 8px; } '+
 
-
         '[class$="Header__title"], [class$="SeriesTitle"] { padding: 16px 16px 20px; } '+
 
         '.com-o-Carousel__slide-list-inner { margin-left: 40px !important; } '+
@@ -1194,7 +1189,6 @@ function set_iframe(){
         '.com-content-list-SeasonTab__thumbnail-watch-icon { '+
         'background: #000; border-radius: 50%; } '+
         '[class$="__group-tab-list-container"] { padding-top: 16px !important; } '+
-
 
         // 配信リストのアイテム
         '[class$="__watching-icon-container"] { display: none; } '+
@@ -1216,6 +1210,15 @@ function set_iframe(){
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
         // マイリスト登録時のプルダウン表示パネル
         '.com-m-NotificationManager { display: none; } '+
+
+        // マイリストボタンと「無料を纏めて」チェックボックス のレイアウト
+        '.com-contentlist-ContentlistContainer__group-tab-list-container'+
+        '--with-sectioning-display-settings { '+
+        'flex-direction: row; justify-content: space-between; } '+
+        '.com-contentlist-SectioningDisplaySettings { align-items: center; } '+
+        '.com-contentlist-SectioningDisplaySettings >.com-a-LabeledCheckbox { display:none; } '+
+
+        '.com-video-EpisodePlayerSectionExternalContent { display: none; } '+ // 🟠 見放題AD
         '</style>';
 
     document.documentElement.insertAdjacentHTML('beforeend', in_style);
