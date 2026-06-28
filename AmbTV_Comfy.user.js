@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.0
+// @version        10.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -786,7 +786,7 @@ function sort_and_free(n){
         '</style>'+
 
         '<style class="dia_style">'+
-        '[class$="SortSettingsButton__menu"] { top: -200vh; } '+
+        '[class$="DisplaySettingsButton__menu"] { top: -200vh; } '+
         '</style>';
 
     if(!document.querySelector('.sort_style')){
@@ -795,20 +795,18 @@ function sort_and_free(n){
 
     dia(1);
     set_order(n);
-    setTimeout(()=>{
-        dia(0);
-    }, 1600);
-
-
-    function dia(n){
-        let dia_style=document.querySelector('.dia_style');
-        if(dia_style){
-            if(n==0){
-                dia_style.disabled=true; }
-            else{
-                dia_style.disabled=false; }}}
 
 } // sort_and_free()
+
+
+
+function dia(n){
+    let dia_style=document.querySelector('.dia_style');
+    if(dia_style){
+        if(n==0){
+            dia_style.disabled=true; }
+        else{
+            dia_style.disabled=false; }}}
 
 
 
@@ -832,11 +830,11 @@ function set_order(n){
             clearInterval(interval2);
 
             let retry3=0;
-            let interval3=setInterval(wait_target3, 100);
+            let interval3=setInterval(wait_target3, 400);
             function wait_target3(){
                 d_order();
                 retry3++;
-                if(retry3>1){ // リトライ制限 0.1secまで
+                if(retry3>1){ // リトライ制限 0.4secまで
                     clearInterval(interval3); }}}}
 
 
@@ -845,7 +843,7 @@ function set_order(n){
         if(s_but){
             s_but.click();
 
-            let order=document.querySelectorAll('button[class$="SettingsMenu__order-item"]')[1];
+            let order=document.querySelectorAll('[class$="SettingsMenu__order-item"]')[1];
             if(order){
                 if(order.ariaPressed=="false"){
                     order.click(); }
@@ -854,8 +852,13 @@ function set_order(n){
                     let dia=document.querySelector('dialog');
                     if(dia){
                         dia.close(); }
-                }, 40); }}
+                }, 40); }
 
+
+            s_but.addEventListener('mouseup', function(){
+                dia(0); });
+
+        } //  if(s_but)
     } // d_order
 
 } // set_order()
