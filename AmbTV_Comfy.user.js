@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.1
+// @version        10.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -13,6 +13,10 @@
 
 
 let help_url='https://ameblo.jp/personwritep/entry-12800867556.html'
+
+sessionStorage.setItem('abm_content_list_settings', '{"isSectioningEnabled":true}');
+
+
 
 if(!is_atv()){ // 通常の画面
     let target0=document.querySelector('head > title');
