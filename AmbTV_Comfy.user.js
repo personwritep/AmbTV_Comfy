@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.2
+// @version        10.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -1217,13 +1217,6 @@ function set_iframe(){
         '.com-tv-SlotActionButtonsBlock { display: none; } '+
         // マイリスト登録時のプルダウン表示パネル
         '.com-m-NotificationManager { display: none; } '+
-
-        // マイリストボタンと「無料を纏めて」チェックボックス のレイアウト
-        '.com-contentlist-ContentlistContainer__group-tab-list-container'+
-        '--with-sectioning-display-settings { '+
-        'flex-direction: row; justify-content: space-between; } '+
-        '.com-contentlist-SectioningDisplaySettings { align-items: center; } '+
-        '.com-contentlist-SectioningDisplaySettings >.com-a-LabeledCheckbox { display:none; } '+
 
         '.com-video-EpisodePlayerSectionExternalContent { display: none; } '+ // 🟠 見放題AD
         '</style>';
