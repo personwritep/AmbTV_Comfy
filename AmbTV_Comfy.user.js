@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.3
+// @version        10.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -1384,9 +1384,13 @@ function list_link_if(){
                 '.com-contentlist-ItemListForContentlistContent__item, '+
                 '.com-contentlist-ItemListForVideoSeriesProgram__item');
             if(li_elem){ // iframeを開いた項目で、リンクが無いリスト項目から動画プレーヤーを開く
-                let if_wrap=window.parent.document.querySelector('#if_wrap');
-                if(if_wrap){
-                    if_wrap.remove(); }}}
+                let thum=li_elem.querySelector('[class$="Item__thumbnail"] img');
+                if(thum){
+                    let src=thum.getAttribute('src');
+                    if(src){
+                        let item_code=src.split('programs/')[1].split('/thumb')[0];
+                        let url='https://abema.tv/video/episode/'+ item_code;
+                        window.parent.location.href=url; }}}}
     });
 
 
