@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.4
+// @version        10.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -428,36 +428,51 @@ function player_env(){
     function end_roll(){
         let PR_icon=document.querySelector('.com-vod-VideoControlPlaybackRate__icon');
         if(PR_icon){
-            if(player_type(0) && player_type(1) && player_type(2) ){
+            if(end_parts(0)){
                 PR_icon.style.boxShadow='10px -6px 0 -7px #fff'; }
             else{
                 PR_icon.style.boxShadow='0 -7px 0 -4px #FF9800'; }
 
             if(sessionStorage.getItem('AmbTV_E')=='1'){ // エンドロール表示モード 🔵
-                PR_icon.style.color='#2196f3'; }
+                PR_icon.style.color='#2196f3';
+                end_parts_hide(0); }
             else if(sessionStorage.getItem('AmbTV_E')=='2'){
-                PR_icon.style.color='red'; }
+                PR_icon.style.color='red';
+                end_parts_hide(0); }
             else if(sessionStorage.getItem('AmbTV_E')=='3'){
-                PR_icon.style.color='#44ff00'; }
+                PR_icon.style.color='#44ff00';
+                end_parts_hide(0); }
             else{
-                PR_icon.style.color='#fff'; }
+                PR_icon.style.color='#fff';
+                end_parts_hide(1); }
 
             PR_icon.onclick=function(event){
                 if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '1');
-                    PR_icon.style.color='#2196f3'; }
+                    PR_icon.style.color='#2196f3';
+                    end_parts_hide(0); }
                 else if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '2');
-                    PR_icon.style.color='red'; }
+                    PR_icon.style.color='red';
+                    end_parts_hide(0); }
                 else if(sessionStorage.getItem('AmbTV_E')=='2'){ // 🔵
                     sessionStorage.setItem('AmbTV_E', '0');
-                    PR_icon.style.color='#fff'; }
+                    PR_icon.style.color='#fff';
+                    end_parts_hide(1); }
                 else{
                     sessionStorage.setItem('AmbTV_E', '3'); // 🔵
-                    PR_icon.style.color='#44ff00'; }}}
+                    PR_icon.style.color='#44ff00';
+                    end_parts_hide(0); }}}
 
 
-        let info=player_type(0);
+        function end_parts_hide(n){
+            if(n==0){
+                end_parts(0).style.opacity='0'; }
+            else{
+                end_parts(0).style.opacity='1'; }}
+
+
+        let info=end_parts(0);
         if(info){
             let observer3=new ResizeObserver(info_sw);
             observer3.observe(info); }
@@ -477,44 +492,34 @@ function player_env(){
 
 
 
-    function player_type(n){
+    function end_parts(n){
+        let NC_Card;
+        let cancel;
+        let next;
+
         let player=document.querySelectorAll( // 🔵2種クラス名
             '.c-vod-EpisodePlayerContainer-wrapper, '+ // player
             '.c-tv-TimeshiftPlayerContainerView')[0]; // slots playrer
-        let cancel;
         if(player){
-            let pb=player.querySelectorAll('button');
-            for(let k=0; k<pb.length; k++){
-                if(pb[k].textContent=='キャンセル'){
-                    cancel=pb[k];
-                    break; }}}
-
-        let target;
-        let next;
-        if(cancel){
-            target=cancel.parentNode.parentNode.parentNode;
-            next=cancel.parentNode.querySelector('.com-a-Link'); }
-
-        let wrap;
-        if(target){
-            wrap=target.parentNode; }
+            NC_Card=player.querySelector('.com-pages-episode-NextContentCard');
+            if(NC_Card){
+                cancel=NC_Card.querySelector('button[class*="cancel"]');
+                next=NC_Card.querySelector('.com-a-Link'); }}
 
         if(n==0){
-            return target; }
-        else if(n==1){
+            return NC_Card; }
+        if(n==1){
             return cancel; }
-        else if(n==2){
+        if(n==2){
             return next; }
-        else if(n==3){
-            return wrap; }
 
-    } // player_type()
+    } // end_parts()
 
 
 
     function info_sw(){
-        let cancel=player_type(1);
-        let next=player_type(2);
+        let cancel=end_parts(1);
+        let next=end_parts(2);
         let SeekBar=document.querySelector('.com-playback-SeekBar__highlighter');
         let fll_end=sessionStorage.getItem('AmbTV_E'); // エンドロール表示モード 🔵
 
@@ -523,24 +528,22 @@ function player_env(){
             if(fll_end=='1'){
                 if(sbw<99 ){ // エンドロールの最初のみキャンセルを押す
                     cancel.click(); }
-
                 else if(sbw==100){
                     if(once==0){ // 🔴
                         once+=1;
                         next.click(); }}
-
                 else{
-                    player_type(3).style.opacity='0';
                     setTimeout(()=>{
                         if(once==0){ // 🔴
                             once+=1;
                             next.click(); }
                     }, 4000); }}
+
             else if(fll_end=='2'){ // エンドロールの最初と最後でキャンセルを押す
                 cancel.click(); }
+
             else if(fll_end=='3'){ // エンドロールで次のエピソードを押す
                 if(sbw>85){
-                    player_type(3).style.opacity='0';
                     setTimeout(()=>{
                         if(once==0){ // 🔴
                             once+=1;
