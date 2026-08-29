@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.5
+// @version        10.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -44,8 +44,6 @@ function is_atv(){
 
 
 function player_env(){
-    let once=0; // 動画の切換え時に2回 nextが押されるのを抑止 🔴
-
     let retry0=0;
     let interval0=setInterval(wait_target0, 20);
     function wait_target0(){
@@ -433,34 +431,34 @@ function player_env(){
             else{
                 PR_icon.style.boxShadow='0 -7px 0 -4px #FF9800'; }
 
-            if(sessionStorage.getItem('AmbTV_E')=='1'){ // エンドロール表示モード 🔵
+            if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
                 PR_icon.style.color='#2196f3';
                 end_parts_hide(0); }
-            else if(sessionStorage.getItem('AmbTV_E')=='2'){
+            else if(sessionStorage.getItem('AmbTV_E')=='2'){ // 🔴
                 PR_icon.style.color='red';
                 end_parts_hide(0); }
-            else if(sessionStorage.getItem('AmbTV_E')=='3'){
+            else if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🟢
                 PR_icon.style.color='#44ff00';
                 end_parts_hide(0); }
-            else{
+            else{ // ⚪
                 PR_icon.style.color='#fff';
                 end_parts_hide(1); }
 
             PR_icon.onclick=function(event){
-                if(sessionStorage.getItem('AmbTV_E')=='3'){ // 🔵
+                if(sessionStorage.getItem('AmbTV_E')=='3'){
                     sessionStorage.setItem('AmbTV_E', '1');
                     PR_icon.style.color='#2196f3';
                     end_parts_hide(0); }
-                else if(sessionStorage.getItem('AmbTV_E')=='1'){ // 🔵
+                else if(sessionStorage.getItem('AmbTV_E')=='1'){
                     sessionStorage.setItem('AmbTV_E', '2');
                     PR_icon.style.color='red';
                     end_parts_hide(0); }
-                else if(sessionStorage.getItem('AmbTV_E')=='2'){ // 🔵
+                else if(sessionStorage.getItem('AmbTV_E')=='2'){
                     sessionStorage.setItem('AmbTV_E', '0');
                     PR_icon.style.color='#fff';
                     end_parts_hide(1); }
                 else{
-                    sessionStorage.setItem('AmbTV_E', '3'); // 🔵
+                    sessionStorage.setItem('AmbTV_E', '3');
                     PR_icon.style.color='#44ff00';
                     end_parts_hide(0); }}}
 
@@ -496,6 +494,7 @@ function player_env(){
         let NC_Card;
         let cancel;
         let next;
+        let subtitle;
 
         let player=document.querySelectorAll( // 🔵2種クラス名
             '.c-vod-EpisodePlayerContainer-wrapper, '+ // player
@@ -504,7 +503,15 @@ function player_env(){
             NC_Card=player.querySelector('.com-pages-episode-NextContentCard');
             if(NC_Card){
                 cancel=NC_Card.querySelector('button[class*="cancel"]');
-                next=NC_Card.querySelector('.com-a-Link'); }}
+                next=NC_Card.querySelector('.com-a-Link');
+                let subtitle_div=NC_Card.querySelector('[class$="Card__subtitle"]');
+                if(subtitle_div){
+                    if(subtitle_div.textContent=='次のエピソード'){
+                        subtitle=true; }
+                    else{
+                        subtitle=false; }}
+                else{
+                    subtitle=false; }}}
 
         if(n==0){
             return NC_Card; }
@@ -512,6 +519,8 @@ function player_env(){
             return cancel; }
         if(n==2){
             return next; }
+        if(n==3){
+            return subtitle; }
 
     } // end_parts()
 
@@ -519,36 +528,36 @@ function player_env(){
 
     function info_sw(){
         let cancel=end_parts(1);
-        let next=end_parts(2);
         let SeekBar=document.querySelector('.com-playback-SeekBar__highlighter');
-        let fll_end=sessionStorage.getItem('AmbTV_E'); // エンドロール表示モード 🔵
+        let fll_end=sessionStorage.getItem('AmbTV_E'); // エンドロール表示モード
 
         if(cancel && SeekBar){
             let sbw=parseFloat(SeekBar.style.width);
-            if(fll_end=='1'){
-                if(sbw<99 ){ // エンドロールの最初のみキャンセルを押す
+            if(fll_end=='1'){ // 🔵
+                if(sbw<99 ){ // エンドロールの最初のみ「キャンセル」を押す
                     cancel.click(); }
                 else if(sbw==100){
-                    if(once==0){ // 🔴
-                        once+=1;
-                        next.click(); }}
+                    stay(); }
                 else{
                     setTimeout(()=>{
-                        if(once==0){ // 🔴
-                            once+=1;
-                            next.click(); }
+                        stay();
                     }, 4000); }}
 
-            else if(fll_end=='2'){ // エンドロールの最初と最後でキャンセルを押す
+            else if(fll_end=='2'){ // 🔴エンドロールの最初と最後で「キャンセル」を押す
                 cancel.click(); }
 
-            else if(fll_end=='3'){ // エンドロールで次のエピソードを押す
+            else if(fll_end=='3'){ // 🟢エンドロールで「次のエピソード」を押す
                 if(sbw>85){
                     setTimeout(()=>{
-                        if(once==0){ // 🔴
-                            once+=1;
-                            next.click(); }
+                        stay();
                     }, 4000); }}}
+
+
+        function stay(){ //「次のエピソード」なら続行、「おすすめ」はキャンセル
+            let cancel=end_parts(1);
+            let next=end_parts(2);
+            let subtitle=end_parts(3);
+            subtitle ? next.click() : cancel.click(); }
 
     } // info_sw()
 
@@ -559,13 +568,13 @@ function player_env(){
         if(video_elem){
             document.onkeydown=function(event){
                 if(!event.shiftKey){
-                    if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ　🔵
+                    if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ
                         event.preventDefault();
                         event.stopImmediatePropagation();
                         video_elem.currentTime -=2;
                         if(video_elem.paused==false){
                             video_elem.play(); }}
-                    if(event.keyCode=='38'){ //「⇧」キー 2sec後へジャンプ　🔵
+                    if(event.keyCode=='38'){ //「⇧」キー 2sec後へジャンプ
                         event.preventDefault();
                         event.stopImmediatePropagation();
                         video_elem.currentTime +=2;
@@ -626,13 +635,13 @@ function player_env(){
             player.onwheel=function(event){ // マスウホイールで設定
                 if(sessionStorage.getItem('AmbTV_S')=='1' || document.fullscreenElement===player){
                     if(!event.ctrlKey && !event.shiftKey){
-                        if(event.deltaY>0){ //「wheel ⇧」 10sec後へジャンプ　🔵
+                        if(event.deltaY>0){ //「wheel ⇧」 10sec後へジャンプ
                             event.preventDefault();
                             event.stopImmediatePropagation();
                             video_elem.currentTime -=10;
                             if(video_elem.paused==false){
                                 video_elem.play(); }}
-                        if(event.deltaY<0){ //「wheel ⇩」 10sec前へジャンプ　🔵
+                        if(event.deltaY<0){ //「wheel ⇩」 10sec前へジャンプ
                             event.preventDefault();
                             event.stopImmediatePropagation();
                             video_elem.currentTime +=10;
@@ -644,9 +653,9 @@ function player_env(){
 
 
         document.addEventListener('keydown', function(event){
-            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl + ⇦」 前のコンテンツへ　🔵
+            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl + ⇦」 前のエピソードへ
                 send_page(0); }
-            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のコンテンツへ　🔵
+            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のエピソードへ
                 send_page(1); }});
 
 
@@ -689,11 +698,11 @@ function player_env(){
 
                 let show;
                 if(n==0){
-                    show='<dialog class="s_no">◀ コンテンツを移動します'; }
+                    show='<dialog class="s_no">◀ エピソードを移動します'; }
                 else if(n==1){
-                    show='<dialog class="s_no">コンテンツを移動します ▶'; }
+                    show='<dialog class="s_no">エピソードを移動します ▶'; }
                 else if(n==2){
-                    show='<dialog class="s_no">⛔ 次のコンテンツが見つかりません'; }
+                    show='<dialog class="s_no">⛔ 次のエピソードが見つかりません'; }
                 show+=
                     '<style>.s_no { position: fixed; top: '+ v_top +'px; left: '+ v_left +'px; '+
                     'padding: 14px 20px 12px; font: normal 20px Meiryo; color: #fff; outline: none; '+
