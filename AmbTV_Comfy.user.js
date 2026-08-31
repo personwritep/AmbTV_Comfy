@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        AmbTV Comfy 🔲 ⭐ ⭐
+// @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
 // @version        10.7
 // @description        AbemaTV ユーティリティ
