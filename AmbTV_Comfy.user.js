@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        AmbTV Comfy
+// @name        AmbTV Comfy 🔲 ⭐ ⭐
 // @namespace        http://tampermonkey.net/
-// @version        10.6
+// @version        10.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -15,7 +15,6 @@
 let help_url='https://ameblo.jp/personwritep/entry-12800867556.html'
 
 sessionStorage.setItem('abm_content_list_settings', '{"isSectioningEnabled":true}');
-
 
 
 if(!is_atv()){ // 通常の画面
@@ -61,6 +60,7 @@ function player_env(){
     function set_player(player){
         let style=
             '<style class="atv_style">'+
+            '.c-common-TransitionProgressContainer .com-a-ProgressBar, '+
             '.c-common-HeaderContainer-header, '+
             '.com-application-SideNavigation { display: none !important; } '+
             '.com-vod-VODRecommendedContentsContainerViewEpisode__above--show-player-aside '+
@@ -70,9 +70,8 @@ function player_env(){
             '.com-vod-VODRecommendedContentsContainerViewEpisode__module-sections, '+
             '.c-video-EpisodeContainerView__page-bottom, '+
             '.c-application-FooterContainer { display: none; } '+
-
             '.c-application-DesktopAppContainer__content-container { '+
-            'align-items: center; height: 100vh; } '+
+            'align-items: center; height: calc(100vh - 1px); } '+
             '.c-application-DesktopAppContainer__content { min-width: 400px !important; } '+
             '.com-vod-VODResponsiveMainContent { '+
             'margin: 0 !important; padding: 0 !important; overflow: hidden; '+
@@ -86,6 +85,7 @@ function player_env(){
             '.c-vod-EpisodePlayerContainer-inlined:before { display: none !important; } '+
             '.c-vod-EpisodePlayerContainer-wrapper { '+
             'position: relative !important; height: calc(100vh - 12px) !important; } '+
+            '.com-vod-VODThumbnail { display: none; } '+
             '.com-vod-VideoControlBar__right .com-vod-VODScreen__button:nth-last-child(3) '+
             '{ display: none; } '+
 
@@ -105,10 +105,11 @@ function player_env(){
             '.atv_help { display: inline !important; } '+
 
             // BreadcrumbList
-            '.com-m-BreadcrumbList { position: absolute; '+
-            'top: 20px; left: 50px; z-index: 15; font-size: 20px; padding: 14px 20px; '+
+            '.com-m-BreadcrumbList { position: absolute; top: 20px; left: 50px; z-index: 15; '+
+            'font-size: 20px; padding: 14px 20px; margin-right: 20px; '+
             'border: 1px solid #ccc; border-radius: 6px; background: #00000090; } '+
             '.com-m-BreadcrumbList__item:nth-last-child(n+3) { display: none; } '+
+            '.com-m-BreadcrumbList__item:nth-last-child(2) { max-width: 16em } '+
             '.com-m-BreadcrumbList__item:nth-last-child(2) .com-m-BreadcrumbList__arrow { '+
             ' display: none; } '+
             '.com-m-BreadcrumbList__item:last-child span { color: #fff !important; } '+
@@ -205,6 +206,20 @@ function player_env(){
                 let tooltip=play_button.querySelector('.com-a-Tooltip');
                 if(button && tooltip.textContent=='再生 (space)'){
                     button.click(); }} // 動画を連続再生で開いた時に、自動で再生開始する
+        }, 2000);
+
+
+        setTimeout(()=>{ // パンクズリストの自動表示
+            if(sessionStorage.getItem('AmbTV_S')=='1' &&
+               sessionStorage.getItem('AmbTV_B')=='0'){
+                sessionStorage.setItem('AmbTV_B', '1');
+                set_breadc(); // パンクズリストを表示⬛
+                setTimeout(()=>{
+                    sessionStorage.setItem('AmbTV_B', '0');
+                }, 100);
+                setTimeout(()=>{
+                    set_breadc(); // パンクズリストを非表示⬛
+                }, 4000); }
         }, 2000);
 
     } // set_player()
@@ -472,19 +487,16 @@ function player_env(){
 
         let info=end_parts(0);
         if(info){
-            let observer3=new ResizeObserver(info_sw);
-            observer3.observe(info); }
+            let monitor3=new MutationObserver(is_large);
+            monitor3.observe(info, { childList: true });
 
-
-        let SeekBar=document.querySelector('.com-playback-SeekBar__highlighter');
-        if(SeekBar){
-            let observer4=new ResizeObserver(bar_end)
-            observer4.observe(SeekBar);
-
-            function bar_end(){
-                let sbw=parseFloat(SeekBar.style.width);
-                if(sbw==100){
-                    info_sw(); }}}
+            function is_large(){
+                setTimeout(()=>{
+                    let info=end_parts(0);
+                    if(info){
+                        if(info.childElementCount>0){
+                            info_sw();
+                        }}}, 200); }}
 
     } // end_roll()
 
@@ -557,7 +569,8 @@ function player_env(){
             let cancel=end_parts(1);
             let next=end_parts(2);
             let subtitle=end_parts(3);
-            subtitle ? next.click() : cancel.click(); }
+            if(cancel && next){
+                subtitle ? next.click() : cancel.click(); }}
 
     } // info_sw()
 
@@ -653,9 +666,9 @@ function player_env(){
 
 
         document.addEventListener('keydown', function(event){
-            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl + ⇦」 前のエピソードへ
+            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl+ ⇦」 前のエピソードへ
                 send_page(0); }
-            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl + ⇨」 次のエピソードへ
+            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl+ ⇨」 次のエピソードへ
                 send_page(1); }});
 
 
