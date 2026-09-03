@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.7
+// @version        10.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -100,9 +100,6 @@ function player_env(){
             '.c-tv-TimeshiftSlotContainerView__page-bottom { display: none; } '+
             '.c-tv-TimeshiftPlayerContainerView-outer { '+
             'padding: 0; height: calc(100vh - 12px) !important; } '+
-
-            // help
-            '.atv_help { display: inline !important; } '+
 
             // BreadcrumbList
             '.com-m-BreadcrumbList { position: absolute; top: 20px; left: 50px; z-index: 15; '+
@@ -292,21 +289,6 @@ function player_env(){
     function player_tool(){
         let cont_r=document.querySelector('.com-vod-VideoControlBar__right');
         if(cont_r){
-            let help=
-                '<a class="atv_help" href="'+ help_url +'" target="_blank">'+
-                '<svg width="20" height="24" viewBox="0 -20 150 150">'+
-                '<path fill="#fff" d="M66 13C56 15 47 18 39 24C-12 60 18 146 82 137C92 135'+
-                ' 102 131 110 126C162 90 128 4 66 13M68 25C131 17 145 117 81 125C16 13'+
-                '3 3 34 68 25M69 40C61 41 39 58 58 61C66 63 73 47 82 57C84 60 83 62 81 6'+
-                '5C77 70 52 90 76 89C82 89 82 84 86 81C92 76 98 74 100 66C105 48 84 37 6'+
-                '9 40M70 94C58 99 66 118 78 112C90 107 82 89 70 94z"></path></svg>'+
-                '<style>.atv_help { margin: 0 16px; text-decoration: none; cursor: pointer; '+
-                'display: none; }</style></a>';
-
-            if(!document.querySelector('.atv_help')){
-                cont_r.insertAdjacentHTML('afterbegin', help); }
-
-
             let sw_svg=
                 '<svg viewBox="0 0 256 256">'+
                 '<path style="fill: #fff;" d="M0 79L31 79L31 48C31 43 30 38 3'+
@@ -479,10 +461,11 @@ function player_env(){
 
 
         function end_parts_hide(n){
-            if(n==0){
-                end_parts(0).style.opacity='0'; }
-            else{
-                end_parts(0).style.opacity='1'; }}
+            if(end_parts(0)){
+                if(n==0){
+                    end_parts(0).style.opacity='0'; }
+                else{
+                    end_parts(0).style.opacity='1'; }}}
 
 
         let info=end_parts(0);
@@ -782,8 +765,8 @@ function player_env(){
     } // slider_act()
 
 
-
     sort_and_free(0);
+    help_setting();
 
 } // player_env()
 
@@ -828,7 +811,6 @@ function sort_and_free(n){
 } // sort_and_free()
 
 
-
 function dia(n){
     let dia_style=document.querySelector('.dia_style');
     if(dia_style){
@@ -836,7 +818,6 @@ function dia(n){
             dia_style.disabled=true; }
         else{
             dia_style.disabled=false; }}}
-
 
 
 function set_order(n){
@@ -891,6 +872,63 @@ function set_order(n){
     } // d_order
 
 } // set_order()
+
+
+
+function help_setting(){
+    let more=0;
+    let retry7=0;
+    let interval7=setInterval(wait_target7, 800);
+    function wait_target7(){
+        retry7++;
+        if(retry7>5){ // リトライ制限 4secまで
+            clearInterval(interval7); }
+        let header_right=document.querySelector('.com-application-Header__right');
+        if(header_right){
+            if(is_video()){
+                help_panel(1, header_right); }
+            else{
+                help_panel(0, header_right); }}}
+
+
+    function help_panel(n, header_right){
+        let help_SVG=
+            '<svg width="20" height="24" viewBox="0 -20 150 150">'+
+            '<path fill="#fff" d="M66 13C56 15 47 18 39 24C-12 60 18 146 82 137C92 135'+
+            ' 102 131 110 126C162 90 128 4 66 13M68 25C131 17 145 117 81 125C16 13'+
+            '3 3 34 68 25M69 40C61 41 39 58 58 61C66 63 73 47 82 57C84 60 83 62 81 6'+
+            '5C77 70 52 90 76 89C82 89 82 84 86 81C92 76 98 74 100 66C105 48 84 37 6'+
+            '9 40M70 94C58 99 66 118 78 112C90 107 82 89 70 94z"></path></svg>';
+
+        let sw=
+            '<div class="help_sw">'+
+            '<a href="'+ help_url +'" target="_blank">Help'+ help_SVG +'</a></div>'+
+            '<style>'+
+            '.com-application-Header__right { display: flex; flex-basis: auto; } '+
+            '.com-search-SearchForm { width: 240px; } '+
+            '.help_sw { font: 16px Meiryo; align-self: center; margin-right: 20px; '+
+            'padding: 8px 8px 0; height: 46px; white-space: nowrap; color: #fff; '+
+            'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
+            '.help_sw:hover { background: #373737; } '+
+            '.help_sw a { text-decoration: none; } '+
+            '.help_sw svg { margin-left: 6px; vertical-align: -4px; }'+
+            '</style>';
+
+        if(n==1){
+            if(!header_right.querySelector('.help_sw')){
+                header_right.insertAdjacentHTML('afterbegin', sw); }}
+        else{
+            header_right.querySelector('.help_sw') ?.remove(); }}
+
+
+    function is_video(){
+        let path=window.location.pathname;
+        if(path=='/' || path.includes('/now-on-air/')){
+            return false; }
+        else {
+            return true; }}
+
+} // help_setting()
 
 
 
