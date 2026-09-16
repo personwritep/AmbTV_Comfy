@@ -792,7 +792,7 @@ function sort_and_free(n){
         // スロットグループの配信リストのアイテム
         '.com-my-list-MyListBaseItem { margin: 2px 0; } '+
         '.com-my-list-MyListBaseItem__wrapper { margin: 0; padding: 8px; } '+
-        '.com-my-list-SlotListItem__start-at { color: #fff; } '+
+        '.com-my-list-SlotListItem__start-at { color: #43ecff; } '+
         '.com-my-list-MyListBaseItem__wrapper:has([class$="ViewingTypeLabel__text--free"]) { '+
         'background: #002e3a; } '+
         '</style>'+
