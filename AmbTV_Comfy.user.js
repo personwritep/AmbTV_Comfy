@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        10.9
+// @version        11.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -122,7 +122,7 @@ function player_env(){
             '.com-vod-VideoControlBar, '+
             '.com-vod-VODScreen__video-control-bg, '+
             '.c-tv-TimeshiftPlayerContainerView-comment-button { '+
-            'display: none !important; } '+
+            'visibility: hidden; } '+
             '</style>'+
 
             '<style class="atv_style_breadcrumb">'+
@@ -130,6 +130,8 @@ function player_env(){
             '</style>'+
 
             '<style class="atv_style_basic">'+
+            '.com-vod-VideoControlBar, '+
+            '.com-vod-VODScreen__video-control-bg { opacity: 1; } '+
             '.com-vod-VideoControlBar button { outline: none; } '+
             '.com-vod-VODScreen-container { background: #000 !important; } '+
             '.com-playback-SeekBar__highlighter, .com-playback-SeekBar__marker, '+
@@ -563,7 +565,7 @@ function player_env(){
         let video_elem=player.querySelector('.com-vod-VODScreen__player video');
         if(video_elem){
             document.onkeydown=function(event){
-                if(!event.shiftKey){
+                if(!event.shiftKey && !event.ctrlKey){
                     if(event.keyCode=='40'){ //「⇩」キー 2sec前へジャンプ
                         event.preventDefault();
                         event.stopImmediatePropagation();
@@ -586,7 +588,8 @@ function player_env(){
                             else{
                                 sessionStorage.setItem('AmbTV_B', '0');
                                 set_breadc(); }}}} // ⬛ パンクズリスト非表示
-                else if(event.shiftKey){
+
+                else if(event.shiftKey && !event.ctrlKey){
                     let slider_h=document.querySelector('.com-playback-Volume__slider-container');
                     if(slider_h && is_slider_hidden()){
                         slider_act();
@@ -596,14 +599,21 @@ function player_env(){
                     if(event.keyCode=='40'){ //「⇩」キー Vol Down　🟨
                         vol_con(0); }
                     if(event.keyCode=='38'){ //「⇧」キー Vol Up　🟨
-                        vol_con(1); }}}
+                        vol_con(1); }}
+
+                else if(!event.shiftKey && event.ctrlKey){
+                    if(event.keyCode=='37'){ //「Ctrl+ ⇦」 前のエピソードへ
+                        send_page(0); }
+                    if(event.keyCode=='39'){ //「Ctrl+ ⇨」 次のエピソードへ
+                        send_page(1); }}
+
+            } // document.onkeydown
 
 
             document.onkeyup=function(event){
                 let slider_h=document.querySelector('.com-playback-Volume__slider-container');
                 if(slider_h){
                     if(!event.shiftKey){
-                        slider_h.style.opacity='0';
                         slider_h.style.visibility='hidden'; }}}
 
 
@@ -611,7 +621,7 @@ function player_env(){
                 let slider=document.querySelector(
                     '.com-vod-VideoControlBar .com-playback-Volume__slider-container');
                 if(slider){
-                    if(getComputedStyle(slider).opacity!=1){
+                    if(getComputedStyle(slider).visibility!='visible'){
                         return true; }}}
 
 
@@ -646,13 +656,6 @@ function player_env(){
 
         } // if(video_elem)
 
-
-
-        document.addEventListener('keydown', function(event){
-            if(event.ctrlKey && event.keyCode=='37'){ //「Ctrl+ ⇦」 前のエピソードへ
-                send_page(0); }
-            if(event.ctrlKey && event.keyCode=='39'){ //「Ctrl+ ⇨」 次のエピソードへ
-                send_page(1); }});
 
 
         function send_page(n){
