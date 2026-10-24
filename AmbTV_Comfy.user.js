@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV Comfy
 // @namespace        http://tampermonkey.net/
-// @version        11.0
+// @version        11.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -113,7 +113,7 @@ function player_env(){
             '</style>'+
 
             '<style class="atv_style_ex">'+
-            '#fluffy-video-view { '+
+            '.com-a-Video__video { '+
             'height: 100% !important; width: 132% !important; margin-left: -16%; } '+
             '</style>'+
 
